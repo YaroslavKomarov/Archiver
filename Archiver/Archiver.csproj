@@ -63,20 +63,41 @@
     <Compile Include="Application\ApplicationLayer.cs" />
     <Compile Include="Domain\Interfaces\IArchiverBase.cs" />
     <Compile Include="Domain\Models\File\FileSmart.cs" />
-    <Compile Include="Domain\Models\Haffman\CompressBits.cs" />
+    <Compile Include="Domain\Models\Haffman\BitsToByteConverter.cs" />
     <Compile Include="Domain\Models\Haffman\HaffmanArchiver.cs" />
     <Compile Include="Domain\Models\Haffman\Tree.cs" />
     <Compile Include="Domain\Models\Lzw\LzwArchiver.cs" />
-    <Compile Include="Form1.cs">
+    <Compile Include="View\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
+    <Compile Include="View\Form1.designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Infrastructure\ConverterToFormat.cs" />
+    <Compile Include="View\Form2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\Form2.designer.cs">
+      <DependentUpon>Form2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\Form3.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\Form3.designer.cs">
+      <DependentUpon>Form3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Infrastructure\ToRightFormatConverter.cs" />
     <Compile Include="Infrastructure\FileHandler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="View\Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\Form2.resx">
+      <DependentUpon>Form2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\Form3.resx">
+      <DependentUpon>Form3.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

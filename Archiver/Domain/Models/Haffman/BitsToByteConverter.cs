@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Archiver.Domain.Models.Haffman
 {
-    public static class CompressBits
+    public static class BitsToByteConverter
     {
         public static byte[] Compress(string bits)
         {

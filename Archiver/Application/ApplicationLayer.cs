@@ -40,7 +40,7 @@ namespace Archiver.Application
                     var algExtension = rightImplementation.AlgorithmExtension;
                     var initExtension = FileHandler.GetFileExtensionFromPath(pathFrom);
                     var tuple = rightImplementation.CompressData(bytes);
-                    var accessoryData = ConverterToFormat.ConvertAccessoryDictToByteArray(tuple.Item2);
+                    var accessoryData = ToRightFormatConverter.ConvertAccessoryDictToByteArray(tuple.Item2);
                     new FileSmart(initExtension, algExtension, tuple.Item1, accessoryData).WriteSmartFile(fHandler);
                 }
             }
@@ -69,7 +69,7 @@ namespace Archiver.Application
             {
                 var fSmart = new FileSmart(bytes);
                 var rightImplementation = archivesDictionary[algotihmsExtensionsDict[fSmart.algExtension]];
-                var accessoryData = ConverterToFormat.ConvertAccessoryDataToDictionary(fSmart.accecoryData);
+                var accessoryData = ToRightFormatConverter.ConvertAccessoryDataToDictionary(fSmart.accecoryData);
                 yield return rightImplementation.DecompressData(fSmart.compressedData, accessoryData);
             }
         }

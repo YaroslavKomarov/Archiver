@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Archiver.Infrastructure
 {
-    public static class ConverterToFormat
+    public static class ToRightFormatConverter
     {
         public static readonly byte[] AccessoryDataSeparator = new byte[] { 0, 1 };
 

@@ -16,6 +16,7 @@ namespace Archiver.Infrastructure
 
         public void TryWriteBytesInPortions(IEnumerable<byte[]> allData)
         {
+            var path = pathFrom + $"";
             using (var fs = new FileStream(pathFrom, FileMode.Create, FileAccess.Write))
             using (var bs = new BufferedStream(fs, BufferSize))
             {

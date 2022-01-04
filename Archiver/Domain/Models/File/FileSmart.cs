@@ -20,11 +20,11 @@ namespace Archiver.Domain.Models.File
 
         public FileSmart(byte[] bytes)
         {
-            var bytesList = ConverterToFormat.GetByteArraysFromByteData(bytes);
+            var bytesList = ToRightFormatConverter.GetByteArraysFromByteData(bytes);
             if (bytesList.Count != 4)
                 throw new FileFormatException();
-            initExtension = ConverterToFormat.GetStringFromBytes(bytesList[0]);
-            algExtension = ConverterToFormat.GetStringFromBytes(bytesList[1]);
+            initExtension = ToRightFormatConverter.GetStringFromBytes(bytesList[0]);
+            algExtension = ToRightFormatConverter.GetStringFromBytes(bytesList[1]);
             compressedData = bytesList[2];
             accecoryData = bytesList[3];
         }
@@ -37,9 +37,9 @@ namespace Archiver.Domain.Models.File
 
         private byte[] GetByteArrayFromFields()
         {
-            var initExtensionBytes = ConverterToFormat.GetBytesFromString(initExtension);
-            var newExtensionBytes = ConverterToFormat.GetBytesFromString(algExtension);
-            return ConverterToFormat.CollectDataIntoByteArray(initExtensionBytes, newExtensionBytes, compressedData, accecoryData);
+            var initExtensionBytes = ToRightFormatConverter.GetBytesFromString(initExtension);
+            var newExtensionBytes = ToRightFormatConverter.GetBytesFromString(algExtension);
+            return ToRightFormatConverter.CollectDataIntoByteArray(initExtensionBytes, newExtensionBytes, compressedData, accecoryData);
         }
     }
 }
