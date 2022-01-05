@@ -31,9 +31,10 @@ namespace Archiver.Infrastructure
             }
         }
 
-        public void TryWriteDecompressedBytesInPortions(IEnumerable<byte[]> allData, string newExtension)
+        public void TryWriteCompressedBytesInPortions(IEnumerable<byte[]> allData, string newExtension)
         {
-            var path = Path.GetFileNameWithoutExtension(PathFrom) + newExtension;
+            var fileName = Path.GetFileNameWithoutExtension(PathFrom) + newExtension;
+            var path = PathTo + $"\\{fileName}";
             TryWriteBytesInPortions(allData, path);
         }
 

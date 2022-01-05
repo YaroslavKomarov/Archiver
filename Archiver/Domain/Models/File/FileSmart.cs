@@ -39,7 +39,7 @@ namespace Archiver.Domain.Models.File
         public void WriteSmartFile(FileHandler fHandler)
         {
             var algExtensionStr = ToRightFormatConverter.GetStringFromBytes(algExtensionBytes);
-            fHandler.TryWriteDecompressedBytesInPortions(GetEnumerationOfByteArrays(), algExtensionStr);
+            fHandler.TryWriteCompressedBytesInPortions(GetEnumerationOfByteArrays(), algExtensionStr);
         }
 
         private IEnumerable<byte[]> GetEnumerationOfByteArrays()
