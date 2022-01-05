@@ -21,22 +21,6 @@ namespace Archiver.Infrastructure
             return UsedEncoding.GetBytes(str);
         }
 
-        //public static IEnumerable<byte[]> GetByteArraysFromByteData(IEnumerable<byte[]> data)
-        //{
-        //    var tmpBytesList = new List<byte>();
-        //    for (var i = 0; i < data.Length; i++)
-        //    {
-        //        var b = data[i];
-        //        if (i + 1 < data.Length && b == DataSeparator[0] && data[i + 1] == DataSeparator[1])
-        //        {
-        //            i++;
-        //            yield return tmpBytesList.ToArray();
-        //            tmpBytesList = new List<byte>();
-        //        }
-        //        else tmpBytesList.Add(b);
-        //    }
-        //}
-
         public static Dictionary<string, byte[]> ConvertAccessoryDataToDictionary(byte[] accessoryData)
         {
             var dictionary = new Dictionary<string, byte[]>();
@@ -47,13 +31,16 @@ namespace Archiver.Infrastructure
             for (var i = 0; i < accessoryData.Length; i++)
             {
                 var b = accessoryData[i];
-                if (i + 1 < accessoryData.Length && b == AccessoryDataSeparator[0] && accessoryData[i + 1] == AccessoryDataSeparator[1])
+                if (IsSeparatorFound(accessoryData, i))
                 {
                     i++;
+                    if (!isKeyAccumulation)
+                    {
+                        dictionary.Add(UsedEncoding.GetString(keyBytes.ToArray()), valBytes.ToArray());
+                        keyBytes = new List<byte>();
+                        valBytes = new List<byte>();
+                    }
                     isKeyAccumulation = !isKeyAccumulation;
-                    dictionary.Add(UsedEncoding.GetString(keyBytes.ToArray()), valBytes.ToArray());
-                    keyBytes = new List<byte>();
-                    valBytes = new List<byte>();
                 }
                 else if (isKeyAccumulation)
                     keyBytes.Add(b);
@@ -93,6 +80,14 @@ namespace Archiver.Infrastructure
                 if (b == 0) lstBytes.Add(0);
                 lstBytes.Add(b);
             }
+        }
+
+        private static bool IsSeparatorFound(byte[] accessoryData, int i)
+        {
+            return i + 1 < accessoryData.Length && i - 1 > 0 
+                && accessoryData[i] == AccessoryDataSeparator[0]
+                && accessoryData[i + 1] == AccessoryDataSeparator[1]
+                && accessoryData[i - 1] != AccessoryDataSeparator[0];
         }
     }
 }
