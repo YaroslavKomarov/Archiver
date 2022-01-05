@@ -15,7 +15,7 @@ namespace Archiver.Domain.Models.Haffman
         private List<Tuple<int, string>> codeList;
         private Dictionary<string, char> decompressedDict;
         private Encoding encoding = Encoding.ASCII;
-        public Dictionary<string, byte[]> ArchiverDictionary { get; set; }
+        public Dictionary<string, byte[]> AccessoryData { get; set; }
 
         public string AlgorithmExtension => ".haf";
 
@@ -23,7 +23,7 @@ namespace Archiver.Domain.Models.Haffman
         {
             content = new StringBuilder();
             codeList = new List<Tuple<int, string>>();
-            ArchiverDictionary = new Dictionary<string, byte[]>();
+            AccessoryData = new Dictionary<string, byte[]>();
         }
 
         public byte[] CompressData(byte[] bytes)
@@ -141,7 +141,7 @@ namespace Archiver.Domain.Models.Haffman
         {
             foreach (var pair in decompressedDict)
             {
-                ArchiverDictionary.Add(pair.Key, encoding.GetBytes(pair.Value.ToString()));
+                AccessoryData.Add(pair.Key, encoding.GetBytes(pair.Value.ToString()));
             }
         }
 
