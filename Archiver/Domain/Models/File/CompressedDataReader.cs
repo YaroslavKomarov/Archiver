@@ -9,7 +9,7 @@ namespace Archiver.Domain.Models.File
         public CompressedDataReader(string path)
         {
             this.bufferSize = FileHandler.BufferSize;
-            this.iterationCount = FileSmart.PublicPropertiesCount;
+            this.iterationCount = 4;
             this.underlyingStream = new BufferedStream(new FileStream(path, FileMode.Open, FileAccess.Read), bufferSize);
         }
 
