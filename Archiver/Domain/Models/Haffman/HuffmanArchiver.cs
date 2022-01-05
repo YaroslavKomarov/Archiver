@@ -2,73 +2,83 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using Archiver.Domain.Models.File;
 using Archiver.Domain.Interfaces;
 
 namespace Archiver.Domain.Models.Haffman
 {
-    public class HaffmanArchiver : IArchiverBase
+    public class HuffmanArchiver : IArchiverBase
     {
         private string allCode;
         private StringBuilder content;
         private List<Tuple<int, string>> codeList;
         private Dictionary<string, char> decompressedDict;
         private Encoding encoding = Encoding.ASCII;
+        public Dictionary<string, byte[]> AccessoryData { get; set; }
 
         public string AlgorithmExtension => ".haf";
 
-        public Dictionary<string, byte[]> AccessoryData
-        {
-            get;
-            set;
-        }
-
-        public HaffmanArchiver()
+        public HuffmanArchiver()
         {
             content = new StringBuilder();
             codeList = new List<Tuple<int, string>>();
             AccessoryData = new Dictionary<string, byte[]>();
         }
 
-        public Tuple<byte[], Dictionary<string, byte[]>> CompressData(byte[] bytes)
+        public IEnumerable<byte[]> CompressData(IEnumerable<byte[]> bytesArray)
         {
             var frequencyDict = new Dictionary<char, int>();
 
-            foreach (var b in bytes)
+            foreach (var a in bytesArray)
             {
-                var symbol = (char)b;
-                content.Append(symbol);
-                if (!frequencyDict.ContainsKey(symbol))
-                    frequencyDict.Add(symbol, 0);
+                foreach(var b in a)
+                {
+                    if (b == 0)
+                        continue;
+                    var symbol = (char)b;
+                    content.Append(symbol);
+                    if (!frequencyDict.ContainsKey(symbol))
+                        frequencyDict.Add(symbol, 0);
 
-                frequencyDict[symbol]++;
+                    frequencyDict[symbol]++;
+                }
+                
+                BypassTree(MakeTree(frequencyDict), "");
+                var compressDictionary = GetCodes(frequencyDict);
+                ReformatedDecodedDictionary();
+                yield return CompressByteArray(compressDictionary);
+                content.Clear();
             }
-
-            BypassTree(MakeTree(frequencyDict), "");
-            return Tuple.Create(CreateCompressedFile(GetCodes(frequencyDict)), GetReformatedDecodedDictionary());
         }
 
-        public byte[] DecompressData(byte[] compressedData, Dictionary<string, byte[]> dictionary)
+        public IEnumerable<byte[]> DecompressData(IEnumerable<byte[]> compressedData)
         {
             var decompressedBytes = new List<byte>();
-            decompressedDict = ReformatedReceivedDictionary(dictionary);
+            decompressedDict = ReformatedReceivedDictionary(AccessoryData);
             var code = "";
-            foreach (var b in compressedData)
+            foreach (var a in compressedData)
             {
-                var nextByte = Convert.ToString(b, 2).PadLeft(8, '0');
-                foreach (var c in nextByte)
+                foreach (var b in a)
                 {
-                    code += c;
-                    if (decompressedDict.ContainsKey(code))
+                    var nextByte = Convert.ToString(b, 2).PadLeft(8, '0');
+                    foreach (var c in nextByte)
                     {
-                        decompressedBytes.Add((byte)decompressedDict[code]);
-                        code = "";
+                        code += c;
+                        if (decompressedDict.ContainsKey(code))
+                        {
+                            decompressedBytes.Add((byte)decompressedDict[code]);
+                            code = "";
+                        }
                     }
                 }
+                yield return decompressedBytes.ToArray();
+                decompressedBytes.Clear();
             }
-            return decompressedBytes.ToArray();
+            
         }
 
-        private byte[] CreateCompressedFile(Dictionary<char, string> codeDictionary)
+        private byte[] CompressByteArray(Dictionary<char, string> codeDictionary)
         {
             //Превращает текст в закодированную строку "0" и "1"
             var strBuilder = new StringBuilder();
@@ -140,14 +150,12 @@ namespace Archiver.Domain.Models.Haffman
             BypassTree(root.Right, code + "0");
         }
 
-        private Dictionary<string, byte[]> GetReformatedDecodedDictionary()
+        private void ReformatedDecodedDictionary()
         {
-            var refDict = new Dictionary<string, byte[]>(decompressedDict.Count);
             foreach (var pair in decompressedDict)
             {
-                refDict.Add(pair.Key, encoding.GetBytes(pair.Value.ToString()));
+                AccessoryData.Add(pair.Key, encoding.GetBytes(pair.Value.ToString()));
             }
-            return refDict;
         }
 
         private Dictionary<string, char> ReformatedReceivedDictionary(Dictionary<string, byte[]> recDict)
@@ -158,16 +166,6 @@ namespace Archiver.Domain.Models.Haffman
                 decDict.Add(pair.Key, char.Parse(encoding.GetString(pair.Value)));
             }
             return decDict;
-        }
-
-        public IEnumerable<byte[]> CompressData(IEnumerable<byte[]> data)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<byte[]> DecompressData(IEnumerable<byte[]> compressedData)
-        {
-            throw new NotImplementedException();
         }
     }
 }

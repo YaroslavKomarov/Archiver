@@ -26,7 +26,7 @@ namespace Archiver.Application
             {
                 archivesDictionary.Add(e.GetType().Name, e);
                 algotihmsExtensionsDict.Add(e.AlgorithmExtension, e.GetType().Name);
-            }            
+            }
         }
 
         public void Compress(string algName, string pathFrom, string pathTo)
@@ -43,12 +43,12 @@ namespace Archiver.Application
             }
             catch (Exception ex)
             {
-                // текст ошибки будем пробрасывать в окно формы
+                throw ex;
             }
         }
 
         public void Decompress(string pathFrom, string pathTo)
-        { 
+        {
             var fHandler = new FileHandler(pathFrom, pathTo);
             try
             {

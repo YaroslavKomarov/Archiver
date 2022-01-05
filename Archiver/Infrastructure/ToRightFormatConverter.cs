@@ -21,6 +21,24 @@ namespace Archiver.Infrastructure
             return UsedEncoding.GetBytes(str);
         }
 
+        public static List<byte[]> GetByteArraysFromByteData(byte[] data)
+        {
+            var result = new List<byte[]>();
+            var tmpBytesList = new List<byte>();
+            for (var i = 0; i < data.Length; i++)
+            {
+                var b = data[i];
+                if (i + 1 < data.Length && b == DataSeparator[0] && data[i + 1] == DataSeparator[1])
+                {
+                    i++;
+                    result.Add(tmpBytesList.ToArray());
+                    tmpBytesList = new List<byte>();
+                }
+                else tmpBytesList.Add(b);
+            }
+            return result;
+        }
+
         public static Dictionary<string, byte[]> ConvertAccessoryDataToDictionary(byte[] accessoryData)
         {
             var dictionary = new Dictionary<string, byte[]>();
