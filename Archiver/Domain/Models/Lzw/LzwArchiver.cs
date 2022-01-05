@@ -7,8 +7,9 @@ namespace Archiver.Domain.Models
     class LzwArchiver : IArchiverBase
     {
         public string AlgorithmExtension => ".lzw";
+        public Dictionary<string, byte[]> ArchiverDictionary { get; set; }
 
-        public Tuple<byte[], Dictionary<string, byte[]>> CompressData(byte[] byteArray)
+        public byte[] CompressData(byte[] byteArray)
         {
             throw new NotImplementedException();
         }

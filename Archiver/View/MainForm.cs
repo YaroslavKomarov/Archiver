@@ -20,6 +20,7 @@ namespace Archiver
         private void button1_Click(object sender, EventArgs e)
         {
             var f1 = new Form1();
+            this.Hide();
             f1.ShowDialog();
             this.Close();
         }
@@ -27,6 +28,7 @@ namespace Archiver
         private void button2_Click(object sender, EventArgs e)
         {
             var f2 = new Form2();
+            this.Hide();
             f2.ShowDialog();
             this.Close();
         }

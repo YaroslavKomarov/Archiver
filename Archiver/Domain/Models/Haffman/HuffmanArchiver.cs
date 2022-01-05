@@ -8,23 +8,25 @@ using Archiver.Domain.Interfaces;
 
 namespace Archiver.Domain.Models.Haffman
 {
-    public class HaffmanArchiver : IArchiverBase
+    public class HuffmanArchiver : IArchiverBase
     {
         private string allCode;
         private StringBuilder content;
         private List<Tuple<int, string>> codeList;
         private Dictionary<string, char> decompressedDict;
         private Encoding encoding = Encoding.ASCII;
+        public Dictionary<string, byte[]> ArchiverDictionary { get; set; }
 
         public string AlgorithmExtension => ".haf";
 
-        public HaffmanArchiver()
+        public HuffmanArchiver()
         {
             content = new StringBuilder();
             codeList = new List<Tuple<int, string>>();
+            ArchiverDictionary = new Dictionary<string, byte[]>();
         }
 
-        public Tuple<byte[], Dictionary<string, byte[]>> CompressData(byte[] bytes)
+        public byte[] CompressData(byte[] bytes)
         {
             var frequencyDict = new Dictionary<char, int>();
 
@@ -37,9 +39,9 @@ namespace Archiver.Domain.Models.Haffman
 
                 frequencyDict[symbol]++;
             }
-
+            ReformatedDecodedDictionary();
             BypassTree(MakeTree(frequencyDict), "");
-            return Tuple.Create(CreateCompressedFile(GetCodes(frequencyDict)), GetReformatedDecodedDictionary());
+            return CreateCompressedFile(GetCodes(frequencyDict));
         }
 
         public byte[] DecompressData(byte[] compressedData, Dictionary<string, byte[]> dictionary)
@@ -135,14 +137,12 @@ namespace Archiver.Domain.Models.Haffman
             BypassTree(root.Right, code + "0");
         }
 
-        private Dictionary<string, byte[]> GetReformatedDecodedDictionary()
+        private void ReformatedDecodedDictionary()
         {
-            var refDict = new Dictionary<string, byte[]>(decompressedDict.Count);
             foreach (var pair in decompressedDict)
             {
-                refDict.Add(pair.Key, encoding.GetBytes(pair.Value.ToString()));
+                ArchiverDictionary.Add(pair.Key, encoding.GetBytes(pair.Value.ToString()));
             }
-            return refDict;
         }
 
         private Dictionary<string, char> ReformatedReceivedDictionary(Dictionary<string, byte[]> recDict)

@@ -6,7 +6,8 @@ namespace Archiver.Domain.Interfaces
     public interface IArchiverBase
     {
         string AlgorithmExtension { get; }
-        Tuple<byte[], Dictionary<string, byte[]>> CompressData(byte[] byteArray);
+        byte[] CompressData(byte[] byteArray);
         byte[] DecompressData(byte[] compressedData, Dictionary<string, byte[]> dictionary);
+        Dictionary<string, byte[]> ArchiverDictionary { get; set; }
     }
 }

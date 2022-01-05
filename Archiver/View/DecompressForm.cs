@@ -30,8 +30,6 @@ namespace Archiver
         {
             if (!String.IsNullOrEmpty(textBox1.Text))
             {
-                textBox1.SelectionStart = 0;
-                textBox1.SelectionLength = textBox1.Text.Length;
                 PathFrom = textBox1.Text;
             }
         }
@@ -40,8 +38,6 @@ namespace Archiver
         {
             if (!String.IsNullOrEmpty(textBox2.Text))
             {
-                textBox2.SelectionStart = 0;
-                textBox2.SelectionLength = textBox1.Text.Length;
                 PathTo = textBox2.Text;
             }
         }
@@ -55,8 +51,27 @@ namespace Archiver
         private void button2_Click(object sender, EventArgs e)
         {
             var f3 = new Form3();
+            this.Hide();
             f3.ShowDialog();
-            f3.Close();
+            this.Close();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            var fd = new OpenFileDialog();
+            if (fd.ShowDialog() == DialogResult.OK)
+            {
+                textBox1.Text = fd.InitialDirectory + fd.FileName;
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            var fd = new FolderBrowserDialog();
+            if (fd.ShowDialog() == DialogResult.OK)
+            {
+                textBox2.Text = fd.SelectedPath;
+            }
         }
     }
 }

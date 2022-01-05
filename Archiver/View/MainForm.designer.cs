@@ -60,7 +60,9 @@ namespace Archiver
             this.ClientSize = new System.Drawing.Size(309, 280);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Name = "Form3";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "SmartArchiver";
             this.ResumeLayout(false);
 

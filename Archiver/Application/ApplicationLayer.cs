@@ -40,8 +40,8 @@ namespace Archiver.Application
                     var algExtension = rightImplementation.AlgorithmExtension;
                     var initExtension = FileHandler.GetFileExtensionFromPath(pathFrom);
                     var tuple = rightImplementation.CompressData(bytes);
-                    var accessoryData = ToRightFormatConverter.ConvertAccessoryDictToByteArray(tuple.Item2);
-                    new FileSmart(initExtension, algExtension, tuple.Item1, accessoryData).WriteSmartFile(fHandler);
+                    var accessoryData = ToRightFormatConverter.ConvertAccessoryDictToByteArray(rightImplementation.ArchiverDictionary);
+                    new FileSmart(initExtension, algExtension, tuple, accessoryData).WriteSmartFile(fHandler);
                 }
             }
             catch (Exception ex)
