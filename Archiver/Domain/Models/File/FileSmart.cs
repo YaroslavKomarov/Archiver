@@ -6,14 +6,6 @@ namespace Archiver.Domain.Models.File
 {
     public class FileSmart
     {
-        public static int PublicPropertiesCount
-        {
-            get => PublicPropertiesCount;
-            set => PublicPropertiesCount = typeof(FileSmart)
-                .GetProperties(BindingFlags.Public)
-                .Length - 1;
-        }
-
         public byte[] accecoryData { get; }
         public IEnumerable<byte[]> compressedData { get; }
         public byte[] initExtensionBytes { get; }
@@ -52,7 +44,7 @@ namespace Archiver.Domain.Models.File
 
         private IEnumerable<byte[]> GetEnumerationOfByteArrays()
         {
-            for (var i = 0; i < PublicPropertiesCount; i++)
+            for (var i = 0; i < 4; i++)
             {
                 if (i == 0)
                     yield return ToRightFormatConverter.GetBytesWithInsignificantZeros(initExtensionBytes);
