@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Archiver.Domain.Models.File;
 using Archiver.Domain.Interfaces;
 
 namespace Archiver.Domain.Models.Haffman
@@ -160,6 +158,16 @@ namespace Archiver.Domain.Models.Haffman
                 decDict.Add(pair.Key, char.Parse(encoding.GetString(pair.Value)));
             }
             return decDict;
+        }
+
+        public IEnumerable<byte[]> CompressData(IEnumerable<byte[]> data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<byte[]> DecompressData(IEnumerable<byte[]> compressedData)
+        {
+            throw new NotImplementedException();
         }
     }
 }

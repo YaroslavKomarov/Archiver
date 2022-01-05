@@ -8,12 +8,14 @@ namespace Archiver.Domain.Models
     {
         public string AlgorithmExtension => ".lzw";
 
-        public Tuple<byte[], Dictionary<string, byte[]>> CompressData(byte[] byteArray)
+        public Dictionary<string, byte[]> AccessoryData { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public IEnumerable<byte[]> CompressData(IEnumerable<byte[]> data)
         {
             throw new NotImplementedException();
         }
 
-        public byte[] DecompressData(byte[] compressedData, Dictionary<string, byte[]> dictionary)
+        public IEnumerable<byte[]> DecompressData(IEnumerable<byte[]> compressedData)
         {
             throw new NotImplementedException();
         }
