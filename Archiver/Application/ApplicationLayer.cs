@@ -43,7 +43,7 @@ namespace Archiver.Application
             }
             catch (Exception ex)
             {
-                // текст ошибки будем пробрасывать в окно формы
+                throw ex;
             }
         }
 

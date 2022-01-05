@@ -34,6 +34,8 @@ namespace Archiver.Domain.Models.Haffman
             {
                 foreach(var b in a)
                 {
+                    if (b == 0)
+                        continue;
                     var symbol = (char)b;
                     content.Append(symbol);
                     if (!frequencyDict.ContainsKey(symbol))
