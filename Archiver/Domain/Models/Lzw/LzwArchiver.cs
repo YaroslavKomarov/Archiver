@@ -15,7 +15,7 @@ namespace Archiver.Domain.Models
             throw new NotImplementedException();
         }
 
-        public byte[] DecompressData(byte[] compressedData, Dictionary<string, byte[]> dictionary)
+        public IEnumerable<byte[]> DecompressData(IEnumerable<byte[]> compressedData)
         {
             throw new NotImplementedException();
         }

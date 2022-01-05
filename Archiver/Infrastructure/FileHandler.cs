@@ -23,7 +23,6 @@ namespace Archiver.Infrastructure
             using (var bs = new BufferedStream(fs, BufferSize))
             {
                 var buffer = new byte[BufferSize];
-                var offset = 0;
                 var readBytes = 0;
                 while ((readBytes = bs.Read(buffer, 0, BufferSize)) > 0)
                 {
