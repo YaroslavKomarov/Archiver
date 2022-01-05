@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="Application\ApplicationLayer.cs" />
     <Compile Include="Domain\Interfaces\IArchiverBase.cs" />
+    <Compile Include="Domain\Models\File\CompressedDataReader.cs" />
     <Compile Include="Domain\Models\File\FileSmart.cs" />
     <Compile Include="Domain\Models\Haffman\BitsToByteConverter.cs" />
     <Compile Include="Domain\Models\Haffman\HuffmanArchiver.cs" />

@@ -1,45 +1,70 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.Reflection;
 using Archiver.Infrastructure;
 
 namespace Archiver.Domain.Models.File
 {
     public class FileSmart
     {
-        public byte[] accecoryData { get; }
-        public byte[] compressedData { get; }
-        public string algExtension { get; }
-        public string initExtension { get; }
-
-        public FileSmart(string initExtension, string algExtension, byte[] compressedData, byte[] accecoryData)
+        public static int PublicPropertiesCount
         {
-            this.initExtension = initExtension;
-            this.algExtension = algExtension;
-            this.compressedData = compressedData;
-            this.accecoryData = accecoryData;
+            get => PublicPropertiesCount;
+            set => PublicPropertiesCount = typeof(FileSmart)
+                .GetProperties(BindingFlags.Public)
+                .Length - 1;
         }
 
-        public FileSmart(byte[] bytes)
+        public byte[] accecoryData { get; }
+        public IEnumerable<byte[]> compressedData { get; }
+        public byte[] initExtensionBytes { get; }
+        public byte[] algExtensionBytes { get; }
+
+        public FileSmart(string initExtension, string algExtension, IEnumerable<byte[]> compressedData, Dictionary<string, byte[]> accecoryData)
         {
-            var bytesList = ToRightFormatConverter.GetByteArraysFromByteData(bytes);
-            if (bytesList.Count != 4)
-                throw new FileFormatException();
-            initExtension = ToRightFormatConverter.GetStringFromBytes(bytesList[0]);
-            algExtension = ToRightFormatConverter.GetStringFromBytes(bytesList[1]);
-            compressedData = bytesList[2];
-            accecoryData = bytesList[3];
+            this.initExtensionBytes = ToRightFormatConverter.GetBytesFromString(initExtension);
+            this.algExtensionBytes = ToRightFormatConverter.GetBytesFromString(algExtension);
+            this.accecoryData = ToRightFormatConverter.ConvertAccessoryDictToByteArray(accecoryData);
+            this.compressedData = compressedData;
+        }
+
+        public FileSmart(string path)
+        {
+            var compressedReader = new CompressedDataReader(path);
+            while (true)
+            {
+                if (initExtensionBytes == null)
+                    initExtensionBytes = compressedReader.GetBytesFromStream();
+                else if (algExtensionBytes == null)
+                    algExtensionBytes = compressedReader.GetBytesFromStream();
+                else if (compressedData == null)
+                    compressedData = compressedReader.GetCompressedBytesFromStream();
+                else if (accecoryData == null)
+                    accecoryData = compressedReader.GetBytesFromStream();
+                else break;
+            }
         }
 
         public void WriteSmartFile(FileHandler fHandler)
         {
-            var bytes = GetByteArrayFromFields();
-            fHandler.TryWriteAllBytes(bytes, algExtension);
+            var algExtensionStr = ToRightFormatConverter.GetStringFromBytes(algExtensionBytes);
+            fHandler.TryWriteDecompressedBytesInPortions(GetEnumerationOfByteArrays(), algExtensionStr);
         }
 
-        private byte[] GetByteArrayFromFields()
+        private IEnumerable<byte[]> GetEnumerationOfByteArrays()
         {
-            var initExtensionBytes = ToRightFormatConverter.GetBytesFromString(initExtension);
-            var newExtensionBytes = ToRightFormatConverter.GetBytesFromString(algExtension);
-            return ToRightFormatConverter.CollectDataIntoByteArray(initExtensionBytes, newExtensionBytes, compressedData, accecoryData);
+            for (var i = 0; i < PublicPropertiesCount; i++)
+            {
+                if (i == 0)
+                    yield return ToRightFormatConverter.GetBytesWithInsignificantZeros(initExtensionBytes);
+                else if (i == 1)
+                    yield return ToRightFormatConverter.GetBytesWithInsignificantZeros(algExtensionBytes);
+                else if (i == 2)
+                    foreach (var bytes in compressedData)
+                        yield return ToRightFormatConverter.GetBytesWithInsignificantZeros(bytes);
+                else
+                    yield return accecoryData;
+                yield return ToRightFormatConverter.DataSeparator;
+            }
         }
     }
 }

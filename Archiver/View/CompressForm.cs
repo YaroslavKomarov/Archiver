@@ -63,7 +63,7 @@ namespace Archiver
             switch (comboBox1.SelectedIndex)
             {
                 case 0:
-                    AlgorithmName = "HaffmanArchiver";
+                    AlgorithmName = "HuffmanArchiver";
                     break;
                 case 1:
                     AlgorithmName = "LzwArchiver";
