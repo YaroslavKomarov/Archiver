@@ -67,6 +67,7 @@
     <Compile Include="Domain\Models\Haffman\HaffmanArchiver.cs" />
     <Compile Include="Domain\Models\Haffman\Tree.cs" />
     <Compile Include="Domain\Models\Lzw\LzwArchiver.cs" />
+    <Compile Include="Domain\Models\File\CompressedDataReader.cs" />
     <Compile Include="View\Form1.cs">
       <SubType>Form</SubType>
     </Compile>

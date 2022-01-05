@@ -21,23 +21,21 @@ namespace Archiver.Infrastructure
             return UsedEncoding.GetBytes(str);
         }
 
-        public static List<byte[]> GetByteArraysFromByteData(byte[] data)
-        {
-            var result = new List<byte[]>();
-            var tmpBytesList = new List<byte>();
-            for (var i = 0; i < data.Length; i++)
-            {
-                var b = data[i];
-                if (i + 1 < data.Length && b == DataSeparator[0] && data[i + 1] == DataSeparator[1])
-                {
-                    i++;
-                    result.Add(tmpBytesList.ToArray());
-                    tmpBytesList = new List<byte>();
-                }
-                else tmpBytesList.Add(b);
-            }
-            return result;
-        }
+        //public static IEnumerable<byte[]> GetByteArraysFromByteData(IEnumerable<byte[]> data)
+        //{
+        //    var tmpBytesList = new List<byte>();
+        //    for (var i = 0; i < data.Length; i++)
+        //    {
+        //        var b = data[i];
+        //        if (i + 1 < data.Length && b == DataSeparator[0] && data[i + 1] == DataSeparator[1])
+        //        {
+        //            i++;
+        //            yield return tmpBytesList.ToArray();
+        //            tmpBytesList = new List<byte>();
+        //        }
+        //        else tmpBytesList.Add(b);
+        //    }
+        //}
 
         public static Dictionary<string, byte[]> ConvertAccessoryDataToDictionary(byte[] accessoryData)
         {
@@ -65,10 +63,10 @@ namespace Archiver.Infrastructure
             return dictionary;
         }
 
-        public static byte[] ConvertAccessoryDictToByteArray(Dictionary<string, byte[]> accessoryData)
+        public static byte[] ConvertAccessoryDictToByteArray(Dictionary<string, byte[]> accessoryDict)
         {
             var result = new List<byte>();
-            foreach (var pair in accessoryData)
+            foreach (var pair in accessoryDict)
             {
                 var keyBytes = UsedEncoding.GetBytes(pair.Key);
                 AddBytesWithInsignificantZeros(keyBytes, result);
@@ -81,16 +79,11 @@ namespace Archiver.Infrastructure
             return result.ToArray();
         }
 
-        public static byte[] CollectDataIntoByteArray(params IEnumerable<byte>[] data)
+        public static byte[] GetBytesWithInsignificantZeros(IEnumerable<byte> bytes)
         {
-            var allData = new List<byte>();
-            foreach (var bytes in data)
-            {
-                AddBytesWithInsignificantZeros(bytes, allData);
-                foreach (var b in DataSeparator)
-                    allData.Add(b);
-            }
-            return allData.ToArray();
+            var lstBytes = new List<byte>();
+            AddBytesWithInsignificantZeros(bytes, lstBytes);
+            return lstBytes.ToArray();
         }
 
         private static void AddBytesWithInsignificantZeros(IEnumerable<byte> bytes, List<byte> lstBytes)

@@ -18,10 +18,17 @@ namespace Archiver.Domain.Models.Haffman
 
         public string AlgorithmExtension => ".haf";
 
+        public Dictionary<string, byte[]> AccessoryData
+        {
+            get;
+            set;
+        }
+
         public HaffmanArchiver()
         {
             content = new StringBuilder();
             codeList = new List<Tuple<int, string>>();
+            AccessoryData = new Dictionary<string, byte[]>();
         }
 
         public Tuple<byte[], Dictionary<string, byte[]>> CompressData(byte[] bytes)
