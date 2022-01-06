@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Archiver.Infrastructure
@@ -11,14 +13,26 @@ namespace Archiver.Infrastructure
 
         public static readonly Encoding UsedEncoding = Encoding.ASCII;
 
-        public static string GetStringFromBytes(byte[] bytes)
+        public static byte[] GetRightFomatExtension(string extension)
         {
-            return UsedEncoding.GetString(bytes);
+            var extensionBytes = GetBytesFromString(extension);
+            return GetBytesWithInsignificantZeros(extensionBytes);
         }
 
-        public static byte[] GetBytesFromString(string str)
+        public static byte[] ConvertAccessoryDictToByteArray(Dictionary<string, byte[]> accessoryDict)
         {
-            return UsedEncoding.GetBytes(str);
+            var result = new List<byte>();
+            foreach (var pair in accessoryDict)
+            {
+                var keyBytes = UsedEncoding.GetBytes(pair.Key);
+                AddBytesWithInsignificantZeros(keyBytes, result);
+                foreach (var b in AccessoryDataSeparator)
+                    result.Add(b);
+                AddBytesWithInsignificantZeros(pair.Value, result);
+                foreach (var b in AccessoryDataSeparator)
+                    result.Add(b);
+            }
+            return result.ToArray();
         }
 
         public static List<byte[]> GetByteArraysFromByteData(byte[] data)
@@ -68,27 +82,34 @@ namespace Archiver.Infrastructure
             return dictionary;
         }
 
-        public static byte[] ConvertAccessoryDictToByteArray(Dictionary<string, byte[]> accessoryDict)
-        {
-            var result = new List<byte>();
-            foreach (var pair in accessoryDict)
-            {
-                var keyBytes = UsedEncoding.GetBytes(pair.Key);
-                AddBytesWithInsignificantZeros(keyBytes, result);
-                foreach (var b in AccessoryDataSeparator)
-                    result.Add(b);
-                AddBytesWithInsignificantZeros(pair.Value, result);
-                foreach (var b in AccessoryDataSeparator)
-                    result.Add(b);
-            }
-            return result.ToArray();
-        }
-
         public static byte[] GetBytesWithInsignificantZeros(IEnumerable<byte> bytes)
         {
             var lstBytes = new List<byte>();
             AddBytesWithInsignificantZeros(bytes, lstBytes);
             return lstBytes.ToArray();
+        }
+
+        public static byte[] RemoveInsignificantZerosFromBytes(byte[] bytes)
+        {
+            var lstBytes = new List<byte>();
+            for (var i = 0; i < bytes.Length; i++)
+            {
+                var b = bytes[i];
+                if (i + 1 < bytes.Length && b == 0 && bytes[i + 1] == 0)
+                    continue;
+                lstBytes.Add(b);
+            }
+            return lstBytes.ToArray();
+        }
+
+        public static string GetStringFromBytes(byte[] bytes)
+        {
+            return UsedEncoding.GetString(bytes);
+        }
+
+        public static byte[] GetBytesFromString(string str)
+        {
+            return UsedEncoding.GetBytes(str);
         }
 
         private static void AddBytesWithInsignificantZeros(IEnumerable<byte> bytes, List<byte> lstBytes)

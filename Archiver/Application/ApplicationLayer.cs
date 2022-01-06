@@ -4,7 +4,6 @@ using System.Linq;
 using Ninject;
 using Ninject.Extensions.Conventions;
 using Archiver.Domain.Models.File;
-using Archiver.Infrastructure;
 using Archiver.Domain.Interfaces;
 
 namespace Archiver.Application
@@ -31,15 +30,14 @@ namespace Archiver.Application
 
         public void Compress(string algName, string pathFrom, string pathTo)
         {
-            var fHandler = new FileHandler(pathFrom, pathTo);
             try
             {
                 var rightImplementation = archivesDictionary[algName];
-                var algExtension = rightImplementation.AlgorithmExtension;
-                var initExtension = FileHandler.GetFileExtensionFromPath(pathFrom);
-                var compressedData = CompressedDataInPortions(rightImplementation, fHandler);
                 var accessoryData = rightImplementation.AccessoryData;
-                new FileSmart(initExtension, algExtension, compressedData, accessoryData).WriteSmartFile(fHandler);
+                var fHandler = new FileHandler(pathFrom, pathTo, rightImplementation.AlgorithmExtension, true);
+                var initExtension = FileHandler.GetFileExtensionFromPath(pathFrom);
+                new ArchiveFile(initExtension, accessoryData).WriteArchiveFile(fHandler, rightImplementation);
+                fHandler.Dispose();
             }
             catch (Exception ex)
             {
@@ -49,32 +47,19 @@ namespace Archiver.Application
 
         public void Decompress(string pathFrom, string pathTo)
         {
-            var fHandler = new FileHandler(pathFrom, pathTo);
             try
             {
-                fHandler.CheckPathExtension(algotihmsExtensionsDict);
-                fHandler.TryWriteBytesInPortions(DecompressedDataInPortions(fHandler));
+                FileHandler.CheckPathExtension(pathFrom, algotihmsExtensionsDict);
+                var algExtension = FileHandler.GetFileExtensionFromPath(pathFrom);
+                var fHandler = new FileHandler(pathFrom, pathTo, algExtension, false);
+                var rightImplementation = archivesDictionary[algotihmsExtensionsDict[algExtension]];
+                ArchiveFile.WriteInitFile(fHandler, rightImplementation);
+                fHandler.Dispose();
             }
             catch (Exception ex)
             {
                 // текст ошибки будем пробрасывать в окно формы
             }
-        }
-
-        private IEnumerable<byte[]> CompressedDataInPortions(IArchiverBase rightImplementation, FileHandler fHandler)
-        {
-            foreach (var compressedBytes in rightImplementation.CompressData(fHandler.TryReadBytesInPortions()))
-                yield return compressedBytes;
-        }
-
-        private IEnumerable<byte[]> DecompressedDataInPortions(FileHandler fHandler)
-        {
-            var fSmart = new FileSmart(fHandler.PathFrom);
-            var algExtension = ToRightFormatConverter.GetStringFromBytes(fSmart.algExtensionBytes);
-            var rightImplementation = archivesDictionary[algotihmsExtensionsDict[algExtension]];
-            rightImplementation.AccessoryData = ToRightFormatConverter.ConvertAccessoryDataToDictionary(fSmart.accecoryData);
-            foreach (var decompressedBytes in rightImplementation.DecompressData(fSmart.compressedData))
-                yield return decompressedBytes;
         }
 
         private Dictionary<string, IArchiverBase> archivesDictionary = new Dictionary<string, IArchiverBase>();

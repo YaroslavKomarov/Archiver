@@ -62,13 +62,13 @@
   <ItemGroup>
     <Compile Include="Application\ApplicationLayer.cs" />
     <Compile Include="Domain\Interfaces\IArchiverBase.cs" />
-    <Compile Include="Domain\Models\File\CompressedDataReader.cs" />
-    <Compile Include="Domain\Models\File\FileSmart.cs" />
+    <Compile Include="Infrastructure\CompressedDataReader.cs" />
+    <Compile Include="Domain\Models\File\ArchiveFile.cs" />
     <Compile Include="Domain\Models\Haffman\BitsToByteConverter.cs" />
     <Compile Include="Domain\Models\Haffman\HuffmanArchiver.cs" />
     <Compile Include="Domain\Models\Haffman\Tree.cs" />
     <Compile Include="Domain\Models\Lzw\LzwArchiver.cs" />
-    <Compile Include="Domain\Models\File\CompressedDataReader.cs" />
+    <Compile Include="Infrastructure\CompressedDataWriter.cs" />
     <Compile Include="View\CompressForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -88,7 +88,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Infrastructure\ToRightFormatConverter.cs" />
-    <Compile Include="Infrastructure\FileHandler.cs" />
+    <Compile Include="Domain\Models\File\FileHandler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="View\CompressForm.resx">

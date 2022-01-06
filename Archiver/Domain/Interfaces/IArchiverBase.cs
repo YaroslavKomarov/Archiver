@@ -7,7 +7,7 @@ namespace Archiver.Domain.Interfaces
     {
         string AlgorithmExtension { get; }
         Dictionary<string, byte[]> AccessoryData { get; set; }
-        IEnumerable<byte[]> CompressData(IEnumerable<byte[]> data); 
-        IEnumerable<byte[]> DecompressData(IEnumerable<byte[]> compressedData);
+        byte[] CompressData(byte[] data); 
+        byte[] DecompressData(byte[] compressedData);
     }
 } 

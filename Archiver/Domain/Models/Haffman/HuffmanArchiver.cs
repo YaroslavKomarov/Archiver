@@ -26,56 +26,46 @@ namespace Archiver.Domain.Models.Haffman
             AccessoryData = new Dictionary<string, byte[]>();
         }
 
-        public IEnumerable<byte[]> CompressData(IEnumerable<byte[]> bytesArray)
+        public byte[] CompressData(byte[] byteArray)
         {
             var frequencyDict = new Dictionary<char, int>();
 
-            foreach (var a in bytesArray)
+            foreach (var b in byteArray)
             {
-                foreach(var b in a)
-                {
-                    if (b == 0)
-                        continue;
-                    var symbol = (char)b;
-                    content.Append(symbol);
-                    if (!frequencyDict.ContainsKey(symbol))
-                        frequencyDict.Add(symbol, 0);
+                if (b == 0)
+                    continue;
+                var symbol = (char)b;
+                content.Append(symbol);
+                if (!frequencyDict.ContainsKey(symbol))
+                    frequencyDict.Add(symbol, 0);
 
-                    frequencyDict[symbol]++;
-                }
-                
-                BypassTree(MakeTree(frequencyDict), "");
-                var compressDictionary = GetCodes(frequencyDict);
-                ReformatedDecodedDictionary();
-                yield return CompressByteArray(compressDictionary);
-                content.Clear();
+                frequencyDict[symbol]++;
             }
+            BypassTree(MakeTree(frequencyDict), "");
+            var compressDictionary = GetCodes(frequencyDict);
+            ReformatedDecodedDictionary();
+            return CompressByteArray(compressDictionary);
         }
 
-        public IEnumerable<byte[]> DecompressData(IEnumerable<byte[]> compressedData)
+        public byte[] DecompressData(byte[] compressedData)
         {
             var decompressedBytes = new List<byte>();
             decompressedDict = ReformatedReceivedDictionary(AccessoryData);
             var code = "";
-            foreach (var a in compressedData)
+            foreach (var b in compressedData)
             {
-                foreach (var b in a)
+                var nextByte = Convert.ToString(b, 2).PadLeft(8, '0');
+                foreach (var c in nextByte)
                 {
-                    var nextByte = Convert.ToString(b, 2).PadLeft(8, '0');
-                    foreach (var c in nextByte)
+                    code += c;
+                    if (decompressedDict.ContainsKey(code))
                     {
-                        code += c;
-                        if (decompressedDict.ContainsKey(code))
-                        {
-                            decompressedBytes.Add((byte)decompressedDict[code]);
-                            code = "";
-                        }
+                        decompressedBytes.Add((byte)decompressedDict[code]);
+                        code = "";
                     }
                 }
-                yield return decompressedBytes.ToArray();
-                decompressedBytes.Clear();
             }
-            
+            return decompressedBytes.ToArray();
         }
 
         private byte[] CompressByteArray(Dictionary<char, string> codeDictionary)
@@ -88,6 +78,7 @@ namespace Archiver.Domain.Models.Haffman
             }
 
             allCode = strBuilder.ToString();
+            content.Clear();
             return BitsToByteConverter.Compress(allCode);
         }
 

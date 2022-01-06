@@ -1,32 +1,16 @@
-﻿using Archiver.Infrastructure;
+﻿using Archiver.Domain.Models.File;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Archiver.Domain.Models.File
+namespace Archiver.Infrastructure
 {
-    public class CompressedDataReader
+    public class CompressedDataReader : IDisposable
     {
         public CompressedDataReader(string path)
         {
             this.bufferSize = FileHandler.BufferSize;
-            this.iterationCount = 4;
             this.underlyingStream = new BufferedStream(new FileStream(path, FileMode.Open, FileAccess.Read), bufferSize);
-        }
-
-        public IEnumerable<byte[]> ReadBytesInPortions()
-        {
-            for (var i = 0; i < iterationCount; i++)
-            {
-                if (i == 0)
-                    yield return GetBytesFromStream();
-                else if (i == 1)
-                    yield return GetBytesFromStream();
-                else if (i == 2)
-                    foreach (var bytes in GetCompressedBytesFromStream())
-                        yield return bytes;
-                else
-                    yield return GetBytesFromStream();
-            }
         }
 
         public byte[] GetBytesFromStream()
@@ -69,10 +53,29 @@ namespace Archiver.Domain.Models.File
                 lstBytes.Add((byte)currentByte);
                 currentByte = nextByte;
             }
+            yield return lstBytes.ToArray();
         }
 
         private BufferedStream underlyingStream;
-        private int iterationCount;
         private int bufferSize;
+        private bool disposedValue;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    underlyingStream.Close();
+                }
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }
