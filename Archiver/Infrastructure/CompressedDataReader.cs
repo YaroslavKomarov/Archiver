@@ -1,16 +1,16 @@
-﻿using Archiver.Domain.Models.File;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace Archiver.Infrastructure
 {
     public class CompressedDataReader : IDisposable
     {
-        public CompressedDataReader(string path)
+        public CompressedDataReader(string path, int bufferSize)
         {
-            this.bufferSize = FileHandler.BufferSize;
-            this.underlyingStream = new BufferedStream(new FileStream(path, FileMode.Open, FileAccess.Read), bufferSize);
+            this.bufferSize = bufferSize;
+            this.underlyingStream = new BufferedStream(File.Open(path, FileMode.Open, FileAccess.Read), bufferSize);
         }
 
         public byte[] GetBytesFromStream()
@@ -56,10 +56,6 @@ namespace Archiver.Infrastructure
             yield return lstBytes.ToArray();
         }
 
-        private BufferedStream underlyingStream;
-        private int bufferSize;
-        private bool disposedValue;
-
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -77,5 +73,9 @@ namespace Archiver.Infrastructure
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+
+        private BufferedStream underlyingStream;
+        private int bufferSize;
+        private bool disposedValue;
     }
 }

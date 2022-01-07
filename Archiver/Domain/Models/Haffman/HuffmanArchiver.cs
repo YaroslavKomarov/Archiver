@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Archiver.Domain.Models.File;
 using Archiver.Domain.Interfaces;
 
 namespace Archiver.Domain.Models.Haffman
@@ -14,7 +12,7 @@ namespace Archiver.Domain.Models.Haffman
         private StringBuilder content;
         private List<Tuple<int, string>> codeList;
         private Dictionary<string, char> decompressedDict;
-        private Encoding encoding = Encoding.ASCII;
+        private Encoding encoding = Encoding.UTF8;
         public Dictionary<string, byte[]> AccessoryData { get; set; }
 
         public string AlgorithmExtension => ".haf";

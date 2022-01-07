@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Archiver.Domain.Models.File;
+using Archiver.Domain.Models.ArchivesFiles;
 using Archiver.Application;
 
 namespace Archiver

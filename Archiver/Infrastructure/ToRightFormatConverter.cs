@@ -11,7 +11,7 @@ namespace Archiver.Infrastructure
 
         public static readonly byte[] DataSeparator = new byte[] { 0, 2 };
 
-        public static readonly Encoding UsedEncoding = Encoding.ASCII;
+        public static readonly Encoding UsedEncoding = Encoding.UTF8;
 
         public static byte[] GetRightFomatExtension(string extension)
         {
@@ -82,13 +82,6 @@ namespace Archiver.Infrastructure
             return dictionary;
         }
 
-        public static byte[] GetBytesWithInsignificantZeros(IEnumerable<byte> bytes)
-        {
-            var lstBytes = new List<byte>();
-            AddBytesWithInsignificantZeros(bytes, lstBytes);
-            return lstBytes.ToArray();
-        }
-
         public static byte[] RemoveInsignificantZerosFromBytes(byte[] bytes)
         {
             var lstBytes = new List<byte>();
@@ -112,11 +105,19 @@ namespace Archiver.Infrastructure
             return UsedEncoding.GetBytes(str);
         }
 
+        public static byte[] GetBytesWithInsignificantZeros(IEnumerable<byte> bytes)
+        {
+            var lstBytes = new List<byte>();
+            AddBytesWithInsignificantZeros(bytes, lstBytes);
+            return lstBytes.ToArray();
+        }
+
         private static void AddBytesWithInsignificantZeros(IEnumerable<byte> bytes, List<byte> lstBytes)
         {
             foreach (var b in bytes)
             {
-                if (b == 0) lstBytes.Add(0);
+                if (b == 0) 
+                    lstBytes.Add(0);
                 lstBytes.Add(b);
             }
         }

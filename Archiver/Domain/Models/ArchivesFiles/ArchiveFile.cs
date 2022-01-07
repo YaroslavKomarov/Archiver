@@ -2,7 +2,7 @@
 using Archiver.Domain.Interfaces;
 using Archiver.Infrastructure;
 
-namespace Archiver.Domain.Models.File
+namespace Archiver.Domain.Models.ArchivesFiles
 {
     public class ArchiveFile
     {

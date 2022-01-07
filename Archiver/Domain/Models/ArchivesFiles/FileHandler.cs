@@ -2,8 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
+using Ude;
 
-namespace Archiver.Domain.Models.File
+namespace Archiver.Domain.Models.ArchivesFiles
 {
     public class FileHandler : IDisposable
     {
@@ -19,7 +22,7 @@ namespace Archiver.Domain.Models.File
             if (isCompressed)
                 compressedWriter = new CompressedDataWriter(GetRightPathToFile(extension));
             else
-                compressedReader = new CompressedDataReader(PathFrom);
+                compressedReader = new CompressedDataReader(PathFrom, BufferSize);
         }
 
         public void InitializeCompressedWriter(string extension)
@@ -36,7 +39,7 @@ namespace Archiver.Domain.Models.File
                 var readBytes = 0;
                 while ((readBytes = bs.Read(buffer, 0, BufferSize)) > 0)
                 {
-                    yield return buffer;
+                    yield return buffer.Take(readBytes).ToArray();
                 }
             }
         }
@@ -53,8 +56,22 @@ namespace Archiver.Domain.Models.File
 
         public IEnumerable<byte[]> TryReadCompressedBytesFromReader()
         {
-
             return compressedReader.GetCompressedBytesFromStream();
+        }
+
+        public static Encoding GetFileEncoding(string path)
+        {
+            var buffer = new byte[12000];
+            var readBytes = 0;
+            using (var fs = File.OpenRead(path))
+            {
+                readBytes = fs.Read(buffer, 0, buffer.Length);
+            }
+
+            var detector = new CharsetDetector();
+            detector.Feed(buffer, 0, readBytes);
+            detector.DataEnd();
+            return Encoding.GetEncoding(detector.Charset);
         }
 
         public static void CheckPathExtension(string path, Dictionary<string, string> extensionDict)
@@ -67,12 +84,6 @@ namespace Archiver.Domain.Models.File
         public static string GetFileExtensionFromPath(string path)
         {
             return Path.GetExtension(path);
-        }
-
-        private string GetRightPathToFile(string extension)
-        {
-            var fileName = Path.GetFileNameWithoutExtension(PathFrom) + extension;
-            return PathTo + $"\\{fileName}";
         }
 
         protected virtual void Dispose(bool disposing)
@@ -92,6 +103,12 @@ namespace Archiver.Domain.Models.File
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        private string GetRightPathToFile(string extension)
+        {
+            var fileName = Path.GetFileNameWithoutExtension(PathFrom) + extension;
+            return PathTo + $"\\{fileName}";
         }
 
         private CompressedDataReader compressedReader;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Ninject;
 using Ninject.Extensions.Conventions;
-using Archiver.Domain.Models.File;
+using Archiver.Domain.Models.ArchivesFiles;
 using Archiver.Domain.Interfaces;
 
 namespace Archiver.Application
@@ -34,8 +34,8 @@ namespace Archiver.Application
             {
                 var rightImplementation = archivesDictionary[algName];
                 var accessoryData = rightImplementation.AccessoryData;
-                var fHandler = new FileHandler(pathFrom, pathTo, rightImplementation.AlgorithmExtension, true);
                 var initExtension = FileHandler.GetFileExtensionFromPath(pathFrom);
+                var fHandler = new FileHandler(pathFrom, pathTo, rightImplementation.AlgorithmExtension, true);
                 new ArchiveFile(initExtension, accessoryData).WriteArchiveFile(fHandler, rightImplementation);
                 fHandler.Dispose();
             }

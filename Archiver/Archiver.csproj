@@ -57,13 +57,16 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="Ude.NetStandard, Version=1.0.2.0, Culture=neutral, PublicKeyToken=103cb45fc06c90e4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ude.NetStandard.1.2.0\lib\net45\Ude.NetStandard.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Application\ApplicationLayer.cs" />
     <Compile Include="Domain\Interfaces\IArchiverBase.cs" />
     <Compile Include="Infrastructure\CompressedDataReader.cs" />
-    <Compile Include="Domain\Models\File\ArchiveFile.cs" />
+    <Compile Include="Domain\Models\ArchivesFiles\ArchiveFile.cs" />
     <Compile Include="Domain\Models\Haffman\BitsToByteConverter.cs" />
     <Compile Include="Domain\Models\Haffman\HuffmanArchiver.cs" />
     <Compile Include="Domain\Models\Haffman\Tree.cs" />
@@ -88,7 +91,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Infrastructure\ToRightFormatConverter.cs" />
-    <Compile Include="Domain\Models\File\FileHandler.cs" />
+    <Compile Include="Domain\Models\ArchivesFiles\FileHandler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="View\CompressForm.resx">
