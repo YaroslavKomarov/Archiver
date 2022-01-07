@@ -5,6 +5,7 @@ using Ninject;
 using Ninject.Extensions.Conventions;
 using Archiver.Domain.Models.ArchivesFiles;
 using Archiver.Domain.Interfaces;
+using System.Windows.Forms;
 
 namespace Archiver.Application
 {
@@ -41,7 +42,7 @@ namespace Archiver.Application
             }
             catch (Exception ex)
             {
-                throw ex;
+                MessageBox.Show(ex.ToString());
             }
         }
 
@@ -58,7 +59,7 @@ namespace Archiver.Application
             }
             catch (Exception ex)
             {
-                // текст ошибки будем пробрасывать в окно формы
+                MessageBox.Show(ex.ToString());
             }
         }
 

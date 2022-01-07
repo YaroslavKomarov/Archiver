@@ -21,6 +21,7 @@ namespace Archiver
         public Form1()
         {
             InitializeComponent();
+            comboBox1.SelectedIndex = 0;
         }
 
         private void label1_Click(object sender, EventArgs e)
