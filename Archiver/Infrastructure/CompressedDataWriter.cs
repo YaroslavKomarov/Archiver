@@ -1,7 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace Archiver.Infrastructure
 {
@@ -9,7 +7,7 @@ namespace Archiver.Infrastructure
     {
         public CompressedDataWriter(string path)
         {
-            underlyingStream = new BinaryWriter(File.Open(path, FileMode.Create, FileAccess.Write));
+            underlyingStream = File.Open(path, FileMode.Create, FileAccess.Write);
         }
 
         public void WriteBytesInPortions(byte[] bytes)
@@ -35,7 +33,7 @@ namespace Archiver.Infrastructure
             GC.SuppressFinalize(this);
         }
 
-        private BinaryWriter underlyingStream;
+        private FileStream underlyingStream;
         private bool disposedValue;
     }
 }

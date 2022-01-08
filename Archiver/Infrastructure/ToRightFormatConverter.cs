@@ -16,7 +16,8 @@ namespace Archiver.Infrastructure
         public static byte[] GetRightFomatExtension(string extension)
         {
             var extensionBytes = GetBytesFromString(extension);
-            return GetBytesWithInsignificantZeros(extensionBytes);
+            var formatExtensionBytes = GetBytesWithInsignificantZeros(extensionBytes);
+            return formatExtensionBytes.Concat(DataSeparator).ToArray();
         }
 
         public static byte[] ConvertAccessoryDictToByteArray(Dictionary<string, byte[]> accessoryDict)
@@ -25,32 +26,15 @@ namespace Archiver.Infrastructure
             foreach (var pair in accessoryDict)
             {
                 var keyBytes = UsedEncoding.GetBytes(pair.Key);
-                AddBytesWithInsignificantZeros(keyBytes, result);
+                AddBytesWithInsignificantZeros(keyBytes, result, true);
                 foreach (var b in AccessoryDataSeparator)
                     result.Add(b);
-                AddBytesWithInsignificantZeros(pair.Value, result);
+                AddBytesWithInsignificantZeros(pair.Value, result, true);
                 foreach (var b in AccessoryDataSeparator)
                     result.Add(b);
             }
-            return result.ToArray();
-        }
-
-        public static List<byte[]> GetByteArraysFromByteData(byte[] data)
-        {
-            var result = new List<byte[]>();
-            var tmpBytesList = new List<byte>();
-            for (var i = 0; i < data.Length; i++)
-            {
-                var b = data[i];
-                if (i + 1 < data.Length && b == DataSeparator[0] && data[i + 1] == DataSeparator[1])
-                {
-                    i++;
-                    result.Add(tmpBytesList.ToArray());
-                    tmpBytesList = new List<byte>();
-                }
-                else tmpBytesList.Add(b);
-            }
-            return result;
+            if (result.Count == 0) result.Add(1);
+            return result.Concat(DataSeparator).ToArray();
         }
 
         public static Dictionary<string, byte[]> ConvertAccessoryDataToDictionary(byte[] accessoryData)
@@ -84,11 +68,12 @@ namespace Archiver.Infrastructure
 
         public static byte[] RemoveInsignificantZerosFromBytes(byte[] bytes)
         {
+            var separator = DataSeparator;
             var lstBytes = new List<byte>();
             for (var i = 0; i < bytes.Length; i++)
             {
                 var b = bytes[i];
-                if (i + 1 < bytes.Length && b == 0 && bytes[i + 1] == 0)
+                if (i + 2 < bytes.Length && b == separator[0] && bytes[i + 1] == separator[0] && bytes[i + 2] == separator[1])
                     continue;
                 lstBytes.Add(b);
             }
@@ -105,18 +90,23 @@ namespace Archiver.Infrastructure
             return UsedEncoding.GetBytes(str);
         }
 
-        public static byte[] GetBytesWithInsignificantZeros(IEnumerable<byte> bytes)
+        public static byte[] GetBytesWithInsignificantZeros(byte[] bytes, bool isAccessory = false)
         {
             var lstBytes = new List<byte>();
-            AddBytesWithInsignificantZeros(bytes, lstBytes);
+            if (isAccessory)
+                AddBytesWithInsignificantZeros(bytes, lstBytes, isAccessory);
+            else
+                AddBytesWithInsignificantZeros(bytes, lstBytes, isAccessory);
             return lstBytes.ToArray();
         }
 
-        private static void AddBytesWithInsignificantZeros(IEnumerable<byte> bytes, List<byte> lstBytes)
+        private static void AddBytesWithInsignificantZeros(byte[] bytes, List<byte> lstBytes, bool isAccessory)
         {
-            foreach (var b in bytes)
+            var separartor = isAccessory ? AccessoryDataSeparator : DataSeparator;
+            for (var i = 0; i < bytes.Length; i++)
             {
-                if (b == 0) 
+                var b = bytes[i];
+                if (i + 1 < bytes.Length && b == separartor[0] && bytes[i + 1] == separartor[1]) 
                     lstBytes.Add(0);
                 lstBytes.Add(b);
             }
