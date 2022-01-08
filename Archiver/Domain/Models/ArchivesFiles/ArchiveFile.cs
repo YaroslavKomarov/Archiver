@@ -48,21 +48,37 @@ namespace Archiver.Domain.Models.ArchivesFiles
 
         public void WriteArchiveFile(FileHandler fHandler, IArchiverBase rightImplementation)
         {
-            var initExtensionBytes = ToRightFormatConverter.GetRightFomatExtension(InitExtension);
-            fHandler.TryWriteBytesPortion(initExtensionBytes);
+            WriteInitExtension(fHandler);
             var count = 0;
             foreach (var bytes in fHandler.TryReadBytesInPortions())
             {
                 var compressedBytes = rightImplementation.CompressData(bytes);
                 if (count++ == 0)
-                {
-                    var accessoryDataBytes = ToRightFormatConverter.ConvertAccessoryDictToByteArray(AccessoryData);
-                    fHandler.TryWriteBytesPortion(accessoryDataBytes);
-                }
-                var formatCompressedBytes = ToRightFormatConverter.GetBytesWithInsignificantZeros(compressedBytes);
-                fHandler.TryWriteBytesPortion(formatCompressedBytes);
+                    WriteAccessoryData(fHandler);
+                WriteCompressedDataPortion(fHandler, compressedBytes);
             }
             fHandler.TryWriteBytesPortion(ToRightFormatConverter.DataSeparator);
+        }
+
+        private void WriteInitExtension(FileHandler fHandler)
+        {
+            var extensionBytes = ToRightFormatConverter.GetBytesFromString(InitExtension);
+            var initExtensionBytes = ToRightFormatConverter.GetBytesWithInsignificantZeros(extensionBytes);
+            fHandler.TryWriteBytesPortion(initExtensionBytes);
+            fHandler.TryWriteBytesPortion(ToRightFormatConverter.DataSeparator);
+        }
+
+        private void WriteAccessoryData(FileHandler fHandler)
+        {
+            var accessoryDataBytes = ToRightFormatConverter.ConvertAccessoryDictToByteArray(AccessoryData);
+            fHandler.TryWriteBytesPortion(accessoryDataBytes);
+            fHandler.TryWriteBytesPortion(ToRightFormatConverter.DataSeparator);
+        }
+
+        private void WriteCompressedDataPortion(FileHandler fHandler, byte[] compressedBytes)
+        {
+            var formatCompressedBytes = ToRightFormatConverter.GetBytesWithInsignificantZeros(compressedBytes);
+            fHandler.TryWriteBytesPortion(formatCompressedBytes);
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text;
 
 namespace Archiver.Infrastructure
@@ -12,13 +10,6 @@ namespace Archiver.Infrastructure
         public static readonly byte[] DataSeparator = new byte[] { 0, 2 };
 
         public static readonly Encoding UsedEncoding = Encoding.UTF8;
-
-        public static byte[] GetRightFomatExtension(string extension)
-        {
-            var extensionBytes = GetBytesFromString(extension);
-            var formatExtensionBytes = GetBytesWithInsignificantZeros(extensionBytes);
-            return formatExtensionBytes.Concat(DataSeparator).ToArray();
-        }
 
         public static byte[] ConvertAccessoryDictToByteArray(Dictionary<string, byte[]> accessoryDict)
         {
@@ -34,7 +25,7 @@ namespace Archiver.Infrastructure
                     result.Add(b);
             }
             if (result.Count == 0) result.Add(1);
-            return result.Concat(DataSeparator).ToArray();
+            return result.ToArray();
         }
 
         public static Dictionary<string, byte[]> ConvertAccessoryDataToDictionary(byte[] accessoryData)
@@ -83,6 +74,11 @@ namespace Archiver.Infrastructure
         public static string GetStringFromBytes(byte[] bytes)
         {
             return UsedEncoding.GetString(bytes);
+        }
+
+        public static int GetIntFromBytes(byte[] bytes)
+        {
+            return int.Parse(UsedEncoding.GetString(bytes));
         }
 
         public static byte[] GetBytesFromString(string str)
