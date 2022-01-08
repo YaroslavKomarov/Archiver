@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Archiver.Domain.Interfaces;
@@ -8,153 +9,158 @@ namespace Archiver.Domain.Models.Haffman
 {
     public class HuffmanArchiver : IArchiverBase
     {
-        public Dictionary<string, byte[]> AccessoryData { get; set; }
-
         public string AlgorithmExtension => ".haf";
+
+        public Dictionary<string, byte[]> AccessoryData { get; set; }
 
         public HuffmanArchiver()
         {
-            content = new StringBuilder();
-            codeList = new List<Tuple<int, string>>();
             AccessoryData = new Dictionary<string, byte[]>();
         }
 
-        public byte[] CompressData(byte[] byteArray)
+        public byte[] CompressData(byte[] data)
         {
-            var frequencyDict = new Dictionary<char, int>();
-
-            foreach (var b in byteArray)
-            {
-                if (b == 0)
-                    continue;
-                var symbol = (char)b;
-                content.Append(symbol);
-                if (!frequencyDict.ContainsKey(symbol))
-                    frequencyDict.Add(symbol, 0);
-                frequencyDict[symbol]++;
-            }
-            BypassTree(MakeTree(frequencyDict), "");
-            var compressDictionary = GetCodes(frequencyDict);
-            ReformatedDecodedDictionary();
-            return CompressByteArray(compressDictionary);
+            var freqs = CalculateFreq(data);
+            var header = CreateHeader(data.Length, freqs);
+            var root = CreateHuffmanTree(freqs);
+            var codes = CreateHuffmanCodes(root);
+            var bits = Compress(data, codes);
+            return header.Concat(bits).ToArray();
         }
 
         public byte[] DecompressData(byte[] compressedData)
         {
-            var decompressedBytes = new List<byte>();
-            decompressedDict = ReformatedReceivedDictionary();
-            var code = "";
-            foreach (var b in compressedData)
-            {
-                var nextByte = Convert.ToString(b, 2).PadLeft(8, '0');
-                foreach (var c in nextByte)
-                {
-                    code += c;
-                    if (decompressedDict.ContainsKey(code))
-                    {
-                        decompressedBytes.Add((byte)decompressedDict[code]);
-                        code = "";
-                    }
-                }
-            }
-            return decompressedBytes.ToArray();
+            ParseHeader(compressedData, out int length, out int startIndex, out int[] freqs);
+            var root = CreateHuffmanTree(freqs);
+            return Decompress(compressedData, startIndex, length, root);
         }
 
-        private byte[] CompressByteArray(Dictionary<char, string> codeDictionary)
+        private byte[] Decompress(byte[] compressedData, int startIndex, int length, Node root)
         {
-            //Превращает текст в закодированную строку "0" и "1"
-            var strBuilder = new StringBuilder();
-            foreach (var c in content.ToString())
-            {
-                strBuilder.Append(codeDictionary[c]);
-            }
-
-            allCode = strBuilder.ToString();
-            content.Clear();
-            return BitsToByteConverter.Compress(allCode);
-        }
-
-        private Tree MakeTree(Dictionary<char, int> frequencyDictionary)
-        {
-            var frequenciesLst = frequencyDictionary.Select(p => p.Value).ToList();
-            var queue = new Queue<Tree>();
-
-            while (frequenciesLst.Count != 1)
-            {
-                frequenciesLst = frequenciesLst.OrderByDescending(c => c).ToList();
-                var leftValue = frequenciesLst[frequenciesLst.Count - 1];
-                var rightValue = frequenciesLst[frequenciesLst.Count - 2];
-                var newNode = new Tree(leftValue, rightValue);
-                var count = queue.Count;
-                while (count-- > 0)
+            var size = 0;
+            var currentNode = root;
+            var data = new List<byte>();
+            for (var i = startIndex; i < compressedData.Length; i++)
+                for (var bit = 1; bit <= 128; bit <<= 1)
                 {
-                    var node = queue.Dequeue();
-                    if (node.Value == leftValue && newNode.Left.Left == null)
-                        newNode.Left = node;
-                    else if (node.Value == rightValue && newNode.Right.Left == null)
-                        newNode.Right = node;
+                    var isZero = (compressedData[i] & bit) == 0;
+                    if (isZero)
+                        currentNode = currentNode.Bit0;
                     else
-                        queue.Enqueue(node);
+                        currentNode = currentNode.Bit1;
+                    if (currentNode.Bit0 != null)
+                        continue;
+                    if (size++ < length)
+                        data.Add(currentNode.Symbol);
+                    currentNode = root;
                 }
-                queue.Enqueue(newNode);
-                frequenciesLst.RemoveRange(frequenciesLst.Count - 2, 2);
-                frequenciesLst.Add(leftValue + rightValue);
+            return data.ToArray();
+        }
+
+        private void ParseHeader(byte[] compressedData,
+            out int length,
+            out int startIndex,
+            out int[] freqs)
+        {
+            length = compressedData[0] |
+                (compressedData[1] << 8) |
+                (compressedData[1] << 16) |
+                (compressedData[1] << 24);
+
+            freqs = new int[256];
+            for (var i = 0; i < 256; i++)
+                freqs[i] = compressedData[4 + i];
+            startIndex = 4 + 256;
+        }
+
+        private byte[] CreateHeader(int length, int[] freqs)
+        {
+            var header = new List<byte>();
+            header.Add((byte)(length & 255));
+            header.Add((byte)((length >> 8) & 255));
+            header.Add((byte)((length >> 16) & 255));
+            header.Add((byte)((length >> 24) & 255));
+            for (var i = 0; i < 256; i++)
+                header.Add((byte)freqs[i]);
+            return header.ToArray();
+        }
+
+        private string[] CreateHuffmanCodes(Node root)
+        {
+            var codes = new string[256];
+            Next(root, "");
+            return codes;
+
+            void Next(Node node, string code)
+            {
+                if (node.Bit0 == null)
+                    codes[node.Symbol] = code;
+                else
+                {
+                    Next(node.Bit0, code + "0");
+                    Next(node.Bit1, code + "1");
+                }
+            }
+        }
+
+        private Node CreateHuffmanTree(int[] freqs)
+        {
+            var queue = new PriorityQueue<Node>();
+            for (var i = 0; i < 256; i++)
+                if (freqs[i] > 0)
+                    queue.Enqueue(freqs[i], new Node((byte)i, freqs[i]));
+
+            while (queue.Size > 1)
+            {
+                var bit0 = queue.Dequeue();
+                var bit1 = queue.Dequeue();
+                var sumFreq = bit0.Freq + bit1.Freq;
+                var nextNode = new Node(bit0, bit1, sumFreq);
+                queue.Enqueue(sumFreq, nextNode);
             }
             return queue.Dequeue();
         }
 
-        private Dictionary<char, string> GetCodes(Dictionary<char, int> frequencyDictionary)
+        private int[] CalculateFreq(byte[] data)
         {
-            decompressedDict = new Dictionary<string, char>();
-            var result = new Dictionary<char, string>();
-            var visited = new HashSet<string>();
-            foreach (var pair in frequencyDictionary)
-                foreach (var tuple in codeList)
-                    if (tuple.Item1 == pair.Value && !visited.Contains(tuple.Item2))
+            var freqs = new int[256];
+            foreach (var d in data)
+                freqs[d]++;
+            NormalizeFreqs();
+            return freqs;
+
+            void NormalizeFreqs()
+            {
+                var max = freqs.Max();
+                if (max < 255) return;
+                for (var i = 0; i < 256; i++)
+                    if (freqs[i] > 0)
+                        freqs[i] = 1 + freqs[i] * 255 / (max + 1);
+            }
+        }
+
+        private byte[] Compress(byte[] data, string[] codes)
+        {
+            var bits = new List<byte>();
+            byte sum = 0;
+            byte bit = 1;
+            foreach (var symbol in data)
+                foreach (var c in codes[symbol])
+                {
+                    if (c == '1')
+                        sum |= bit;
+                    if (bit < 128)
+                        bit <<= 1;
+                    else
                     {
-                        decompressedDict.Add(tuple.Item2, pair.Key);
-                        result.Add(pair.Key, tuple.Item2);
-                        visited.Add(tuple.Item2);
-                        break;
+                        bits.Add(sum);
+                        sum = 0;
+                        bit = 1;
                     }
-
-            return result;
+                }
+            if (bit > 1)
+                bits.Add(sum);
+            return bits.ToArray();
         }
-
-        private void BypassTree(Tree root, string code)
-        {
-            if (root == null)
-                return;
-            BypassTree(root.Left, code + "1");
-
-            if (root.Right == null && root.Left == null)
-                codeList.Add(new Tuple<int, string>(root.Value, code));
-
-            BypassTree(root.Right, code + "0");
-        }
-
-        private void ReformatedDecodedDictionary()
-        {
-            foreach (var pair in decompressedDict)
-            {
-                AccessoryData.Add(pair.Key, new byte[] { (byte)pair.Value });
-            }
-        }
-
-        private Dictionary<string, char> ReformatedReceivedDictionary()
-        {
-            var decDict = new Dictionary<string, char>(AccessoryData.Count);
-            foreach (var pair in AccessoryData)
-            {
-                decDict.Add(pair.Key, (char)pair.Value[0]);
-            }
-            return decDict;
-        }
-
-        private string allCode;
-        private StringBuilder content;
-        private List<Tuple<int, string>> codeList;
-        private Dictionary<string, char> decompressedDict;
-       //private Encoding encoding = Encoding.UTF8;
     }
 }

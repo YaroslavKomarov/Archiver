@@ -40,7 +40,8 @@ namespace Archiver.Domain.Models.ArchivesFiles
             fHandler.InitializeCompressedWriter(archiveFile.InitExtension);
             foreach (var compressedBytes in fHandler.TryReadCompressedBytesFromReader())
             {
-                var decompressedBytes = rightImplementation.DecompressData(compressedBytes);
+                var formatCompressedBytes = ToRightFormatConverter.RemoveInsignificantZerosFromBytes(compressedBytes);
+                var decompressedBytes = rightImplementation.DecompressData(formatCompressedBytes);
                 fHandler.TryWriteBytesPortion(decompressedBytes);
             }
         }
@@ -49,7 +50,6 @@ namespace Archiver.Domain.Models.ArchivesFiles
         {
             var initExtensionBytes = ToRightFormatConverter.GetRightFomatExtension(InitExtension);
             fHandler.TryWriteBytesPortion(initExtensionBytes);
-            fHandler.TryWriteBytesPortion(ToRightFormatConverter.DataSeparator);
             var count = 0;
             foreach (var bytes in fHandler.TryReadBytesInPortions())
             {
@@ -58,7 +58,6 @@ namespace Archiver.Domain.Models.ArchivesFiles
                 {
                     var accessoryDataBytes = ToRightFormatConverter.ConvertAccessoryDictToByteArray(AccessoryData);
                     fHandler.TryWriteBytesPortion(accessoryDataBytes);
-                    fHandler.TryWriteBytesPortion(ToRightFormatConverter.DataSeparator);
                 }
                 var formatCompressedBytes = ToRightFormatConverter.GetBytesWithInsignificantZeros(compressedBytes);
                 fHandler.TryWriteBytesPortion(formatCompressedBytes);
