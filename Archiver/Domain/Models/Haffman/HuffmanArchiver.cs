@@ -8,11 +8,6 @@ namespace Archiver.Domain.Models.Haffman
 {
     public class HuffmanArchiver : IArchiverBase
     {
-        private string allCode;
-        private StringBuilder content;
-        private List<Tuple<int, string>> codeList;
-        private Dictionary<string, char> decompressedDict;
-        private Encoding encoding = Encoding.UTF8;
         public Dictionary<string, byte[]> AccessoryData { get; set; }
 
         public string AlgorithmExtension => ".haf";
@@ -36,7 +31,6 @@ namespace Archiver.Domain.Models.Haffman
                 content.Append(symbol);
                 if (!frequencyDict.ContainsKey(symbol))
                     frequencyDict.Add(symbol, 0);
-
                 frequencyDict[symbol]++;
             }
             BypassTree(MakeTree(frequencyDict), "");
@@ -48,7 +42,7 @@ namespace Archiver.Domain.Models.Haffman
         public byte[] DecompressData(byte[] compressedData)
         {
             var decompressedBytes = new List<byte>();
-            decompressedDict = ReformatedReceivedDictionary(AccessoryData);
+            decompressedDict = ReformatedReceivedDictionary();
             var code = "";
             foreach (var b in compressedData)
             {
@@ -143,18 +137,24 @@ namespace Archiver.Domain.Models.Haffman
         {
             foreach (var pair in decompressedDict)
             {
-                AccessoryData.Add(pair.Key, encoding.GetBytes(pair.Value.ToString()));
+                AccessoryData.Add(pair.Key, new byte[] { (byte)pair.Value });
             }
         }
 
-        private Dictionary<string, char> ReformatedReceivedDictionary(Dictionary<string, byte[]> recDict)
+        private Dictionary<string, char> ReformatedReceivedDictionary()
         {
-            var decDict = new Dictionary<string, char>(recDict.Count);
-            foreach (var pair in recDict)
+            var decDict = new Dictionary<string, char>(AccessoryData.Count);
+            foreach (var pair in AccessoryData)
             {
-                decDict.Add(pair.Key, char.Parse(encoding.GetString(pair.Value)));
+                decDict.Add(pair.Key, (char)pair.Value[0]);
             }
             return decDict;
         }
+
+        private string allCode;
+        private StringBuilder content;
+        private List<Tuple<int, string>> codeList;
+        private Dictionary<string, char> decompressedDict;
+       //private Encoding encoding = Encoding.UTF8;
     }
 }
