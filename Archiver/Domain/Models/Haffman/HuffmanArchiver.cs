@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Archiver.Domain.Interfaces;
 
@@ -59,10 +60,7 @@ namespace Archiver.Domain.Models.Haffman
             out int startIndex,
             out int[] freqs)
         {
-            length = compressedData[0] |
-                (compressedData[1] << 8) |
-                (compressedData[1] << 16) |
-                (compressedData[1] << 24);
+            length = BitConverter.ToInt32(compressedData.Take(4).ToArray(), 0);
 
             freqs = new int[256];
             for (var i = 0; i < 256; i++)
@@ -73,10 +71,12 @@ namespace Archiver.Domain.Models.Haffman
         private byte[] CreateHeader(int length, int[] freqs)
         {
             var header = new List<byte>();
-            header.Add((byte)(length & 255));
-            header.Add((byte)((length >> 8) & 255));
-            header.Add((byte)((length >> 16) & 255));
-            header.Add((byte)((length >> 24) & 255));
+            foreach (var b in BitConverter.GetBytes(length))
+                header.Add(b);
+            //header.Add((byte)(length & 255));
+            //header.Add((byte)((length >> 8) & 255));
+            //header.Add((byte)((length >> 16) & 255));
+            //header.Add((byte)((length >> 24) & 255));
             for (var i = 0; i < 256; i++)
                 header.Add((byte)freqs[i]);
             return header.ToArray();

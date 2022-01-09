@@ -83,11 +83,11 @@
     <Compile Include="Domain\Interfaces\IArchiverBase.cs" />
     <Compile Include="Domain\Models\Haffman\Node.cs" />
     <Compile Include="Domain\Models\Haffman\PriorityQueue.cs" />
-    <Compile Include="Infrastructure\CompressedDataReader.cs" />
+    <Compile Include="Infrastructure\DataReader.cs" />
     <Compile Include="Domain\Models\ArchivesFiles\ArchiveFile.cs" />
     <Compile Include="Domain\Models\Haffman\HuffmanArchiver.cs" />
     <Compile Include="Domain\Models\Lzw\LzwArchiver.cs" />
-    <Compile Include="Infrastructure\CompressedDataWriter.cs" />
+    <Compile Include="Infrastructure\DataWriter.cs" />
     <Compile Include="View\CompressForm.cs">
       <SubType>Form</SubType>
     </Compile>

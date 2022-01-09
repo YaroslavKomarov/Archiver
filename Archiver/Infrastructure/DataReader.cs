@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Archiver.Infrastructure
 {
-    public class CompressedDataReader : IDisposable
+    public class DataReader : IDisposable
     {
-        public CompressedDataReader(string path, int bufferSize)
+        public DataReader(string path, int bufferSize)
         {
-            this.bufferSize = bufferSize;
             this.underlyingStream = new BufferedStream(File.Open(path, FileMode.Open, FileAccess.Read), bufferSize);
         }
 
-        public byte[] GetBytesFromStream()
+        public byte[] GetBytesFromStreamUntilDataSep()
         {
             var currentByte = underlyingStream.ReadByte();
             var lstBytes = new List<byte>();
@@ -21,18 +19,15 @@ namespace Archiver.Infrastructure
             while (currentByte != -1)
             {
                 var nextByte = underlyingStream.ReadByte();
-                if (lstBytes.Count > 0)
-                    if (lstBytes[lstBytes.Count - 1] != ToRightFormatConverter.DataSeparator[0]
-                        && currentByte == ToRightFormatConverter.DataSeparator[0]
-                        && nextByte == ToRightFormatConverter.DataSeparator[1])
-                        break;
+                if (IsSeparatorFound(lstBytes, currentByte, nextByte, false))
+                    break;
                 lstBytes.Add((byte)currentByte);
                 currentByte = nextByte;
             }
             return lstBytes.ToArray();
         }
 
-        public IEnumerable<byte[]> GetCompressedBytesFromStream()
+        public IEnumerable<byte[]> GetBytesFromStreamUntilCompressedDataSep()
         {
             var currentByte = underlyingStream.ReadByte();
             var lstBytes = new List<byte>();
@@ -40,20 +35,18 @@ namespace Archiver.Infrastructure
             while (currentByte != -1)
             {
                 var nextByte = underlyingStream.ReadByte();
-                if (lstBytes.Count == bufferSize)
+                if (IsSeparatorFound(lstBytes, currentByte, nextByte, true))
                 {
                     yield return lstBytes.ToArray();
                     lstBytes = new List<byte>();
+                    currentByte = underlyingStream.ReadByte();
+                    continue;
                 }
-                if (lstBytes.Count > 0)
-                    if (lstBytes[lstBytes.Count - 1] != ToRightFormatConverter.DataSeparator[0]
-                        && currentByte == ToRightFormatConverter.DataSeparator[0]
-                        && nextByte == ToRightFormatConverter.DataSeparator[1])
-                        break;
                 lstBytes.Add((byte)currentByte);
                 currentByte = nextByte;
             }
-            yield return lstBytes.ToArray();
+            if (lstBytes.Count > 0)
+                yield return lstBytes.ToArray();
         }
 
         protected virtual void Dispose(bool disposing)
@@ -74,8 +67,16 @@ namespace Archiver.Infrastructure
             GC.SuppressFinalize(this);
         }
 
+        private bool IsSeparatorFound(List<byte> lstBytes, int currentByte, int nextByte, bool isCompressed)
+        {
+            var separator = isCompressed ? ToRightFormatConverter.CompressedDataSeparator : ToRightFormatConverter.DataSeparator;
+            return lstBytes.Count > 0
+                && lstBytes[lstBytes.Count - 1] != separator[0]
+                && currentByte == separator[0]
+                && nextByte == separator[1];
+        }
+
         private BufferedStream underlyingStream;
-        private int bufferSize;
         private bool disposedValue;
     }
 }
