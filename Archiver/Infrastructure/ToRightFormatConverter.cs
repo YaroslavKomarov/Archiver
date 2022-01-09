@@ -5,9 +5,11 @@ namespace Archiver.Infrastructure
 {
     public static class ToRightFormatConverter
     {
-        public static readonly byte[] AccessoryDataSeparator = new byte[] { 0, 1 };
+        public static readonly byte[] DataSeparator = new byte[] { 0, 1 };
 
-        public static readonly byte[] DataSeparator = new byte[] { 0, 2 };
+        public static readonly byte[] AccessoryDataSeparator = new byte[] { 0, 2 };
+
+        public static readonly byte[] CompressedDataSeparator = new byte[] { 0, 3 };
 
         public static readonly Encoding UsedEncoding = Encoding.UTF8;
 
@@ -17,10 +19,10 @@ namespace Archiver.Infrastructure
             foreach (var pair in accessoryDict)
             {
                 var keyBytes = UsedEncoding.GetBytes(pair.Key);
-                AddBytesWithInsignificantZeros(keyBytes, result, true);
+                AddAccessoryBytesWithZeros(keyBytes, result);
                 foreach (var b in AccessoryDataSeparator)
                     result.Add(b);
-                AddBytesWithInsignificantZeros(pair.Value, result, true);
+                AddAccessoryBytesWithZeros(keyBytes, result);
                 foreach (var b in AccessoryDataSeparator)
                     result.Add(b);
             }
@@ -57,15 +59,16 @@ namespace Archiver.Infrastructure
             return dictionary;
         }
 
-        public static byte[] RemoveInsignificantZerosFromBytes(byte[] bytes)
+        public static byte[] RemoveZerosFromBytes(byte[] bytes)
         {
-            var separator = DataSeparator;
+            var separator = CompressedDataSeparator;
             var lstBytes = new List<byte>();
             for (var i = 0; i < bytes.Length; i++)
             {
                 var b = bytes[i];
-                if (i + 2 < bytes.Length && b == separator[0] && bytes[i + 1] == separator[0] && bytes[i + 2] == separator[1])
-                    continue;
+                if (i + 2 < bytes.Length)
+                    if (b == separator[0] && bytes[i + 1] == separator[0] && bytes[i + 2] == separator[1])
+                        continue;
                 lstBytes.Add(b);
             }
             return lstBytes.ToArray();
@@ -76,34 +79,45 @@ namespace Archiver.Infrastructure
             return UsedEncoding.GetString(bytes);
         }
 
-        public static int GetIntFromBytes(byte[] bytes)
-        {
-            return int.Parse(UsedEncoding.GetString(bytes));
-        }
-
         public static byte[] GetBytesFromString(string str)
         {
             return UsedEncoding.GetBytes(str);
         }
 
-        public static byte[] GetBytesWithInsignificantZeros(byte[] bytes, bool isAccessory = false)
+        public static byte[] GetBytesWithZerosDataSeparator(byte[] bytes)
         {
             var lstBytes = new List<byte>();
-            if (isAccessory)
-                AddBytesWithInsignificantZeros(bytes, lstBytes, isAccessory);
-            else
-                AddBytesWithInsignificantZeros(bytes, lstBytes, isAccessory);
+            AddBytesWithZeros(bytes, lstBytes, DataSeparator);
             return lstBytes.ToArray();
         }
 
-        private static void AddBytesWithInsignificantZeros(byte[] bytes, List<byte> lstBytes, bool isAccessory)
+        public static byte[] GetBytesWithZerosCompressedDataSep(byte[] bytes)
         {
-            var separartor = isAccessory ? AccessoryDataSeparator : DataSeparator;
+            var lstBytes = new List<byte>();
+            AddBytesWithZeros(bytes, lstBytes, CompressedDataSeparator);
+            return lstBytes.ToArray();
+        }
+
+        private static void AddBytesWithZeros(byte[] bytes, List<byte> lstBytes, byte[] separator)
+        {
             for (var i = 0; i < bytes.Length; i++)
             {
                 var b = bytes[i];
-                if (i + 1 < bytes.Length && b == separartor[0] && bytes[i + 1] == separartor[1]) 
+                if (i + 1 < bytes.Length && b == separator[0] && bytes[i + 1] == separator[1]) 
                     lstBytes.Add(0);
+                lstBytes.Add(b);
+            }
+        }
+
+        private static void AddAccessoryBytesWithZeros(byte[] bytes, List<byte> lstBytes)
+        {
+            for (var i = 0; i < bytes.Length; i++)
+            {
+                var b = bytes[i];
+                if (i + 1 < bytes.Length)
+                    if ((b == AccessoryDataSeparator[0] && bytes[i + 1] == AccessoryDataSeparator[1])
+                        || (b == DataSeparator[0] && bytes[i + 1] == DataSeparator[1]))
+                        lstBytes.Add(0);
                 lstBytes.Add(b);
             }
         }

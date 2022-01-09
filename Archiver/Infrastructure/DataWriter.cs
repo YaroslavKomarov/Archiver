@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Archiver.Infrastructure
 {
-    public class CompressedDataWriter : IDisposable
+    public class DataWriter : IDisposable
     {
-        public CompressedDataWriter(string path)
+        public DataWriter(string path)
         {
             underlyingStream = File.Open(path, FileMode.Create, FileAccess.Write);
         }

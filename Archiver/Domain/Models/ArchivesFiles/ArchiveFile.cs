@@ -40,7 +40,7 @@ namespace Archiver.Domain.Models.ArchivesFiles
             fHandler.InitializeCompressedWriter(archiveFile.InitExtension);
             foreach (var compressedBytes in fHandler.TryReadCompressedBytesFromReader())
             {
-                var formatCompressedBytes = ToRightFormatConverter.RemoveInsignificantZerosFromBytes(compressedBytes);
+                var formatCompressedBytes = ToRightFormatConverter.RemoveZerosFromBytes(compressedBytes);
                 var decompressedBytes = rightImplementation.DecompressData(formatCompressedBytes);
                 fHandler.TryWriteBytesPortion(decompressedBytes);
             }
@@ -57,13 +57,12 @@ namespace Archiver.Domain.Models.ArchivesFiles
                     WriteAccessoryData(fHandler);
                 WriteCompressedDataPortion(fHandler, compressedBytes);
             }
-            fHandler.TryWriteBytesPortion(ToRightFormatConverter.DataSeparator);
         }
 
         private void WriteInitExtension(FileHandler fHandler)
         {
             var extensionBytes = ToRightFormatConverter.GetBytesFromString(InitExtension);
-            var initExtensionBytes = ToRightFormatConverter.GetBytesWithInsignificantZeros(extensionBytes);
+            var initExtensionBytes = ToRightFormatConverter.GetBytesWithZerosDataSeparator(extensionBytes);
             fHandler.TryWriteBytesPortion(initExtensionBytes);
             fHandler.TryWriteBytesPortion(ToRightFormatConverter.DataSeparator);
         }
@@ -77,8 +76,9 @@ namespace Archiver.Domain.Models.ArchivesFiles
 
         private void WriteCompressedDataPortion(FileHandler fHandler, byte[] compressedBytes)
         {
-            var formatCompressedBytes = ToRightFormatConverter.GetBytesWithInsignificantZeros(compressedBytes);
+            var formatCompressedBytes = ToRightFormatConverter.GetBytesWithZerosCompressedDataSep(compressedBytes);
             fHandler.TryWriteBytesPortion(formatCompressedBytes);
+            fHandler.TryWriteBytesPortion(ToRightFormatConverter.CompressedDataSeparator);
         }
     }
 }

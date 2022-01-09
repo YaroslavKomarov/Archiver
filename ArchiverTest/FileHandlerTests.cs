@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 namespace ArchiverTest
 {
-    public class Tests
+    public class FileHandlerTests
     {
         [SetUp]
         public void Setup()
@@ -11,7 +11,7 @@ namespace ArchiverTest
         }
 
         [Test]
-        public void Test1()
+        public void Tmp()
         {
             Assert.Pass();
         }

@@ -10,7 +10,7 @@ namespace Archiver.Domain.Models.ArchivesFiles
 {
     public class FileHandler : IDisposable
     {
-        public static readonly int BufferSize = 10 * 1024 * 1024;
+        public static readonly int BufferSize = 4 * 1024 * 1024;
         public string PathFrom { get; }
         public string PathTo { get; }
 
@@ -18,16 +18,17 @@ namespace Archiver.Domain.Models.ArchivesFiles
         {
             PathFrom = pathFrom;
             PathTo = pathTo;
+            CheckPathToIsDirectory();
 
             if (isCompressed)
-                compressedWriter = new CompressedDataWriter(GetRightPathToFile(extension));
+                writer = new DataWriter(GetRightPathToFile(extension));
             else
-                compressedReader = new CompressedDataReader(PathFrom, BufferSize);
+                redaer = new DataReader(PathFrom, BufferSize);
         }
 
         public void InitializeCompressedWriter(string extension)
         {
-            compressedWriter = new CompressedDataWriter(GetRightPathToFile(extension));
+            writer = new DataWriter(GetRightPathToFile(extension));
         }
 
         public IEnumerable<byte[]> TryReadBytesInPortions()
@@ -46,17 +47,17 @@ namespace Archiver.Domain.Models.ArchivesFiles
 
         public void TryWriteBytesPortion(byte[] bytes)
         {
-            compressedWriter.WriteBytesInPortions(bytes);
+            writer.WriteBytesInPortions(bytes);
         }
 
         public byte[] TryReadAccessoryDataFromReader()
         {
-            return compressedReader.GetBytesFromStream();
+            return redaer.GetBytesFromStreamUntilDataSep();
         }
 
         public IEnumerable<byte[]> TryReadCompressedBytesFromReader()
         {
-            return compressedReader.GetCompressedBytesFromStream();
+            return redaer.GetBytesFromStreamUntilCompressedDataSep();
         }
 
         public static Encoding GetFileEncoding(string path)
@@ -92,8 +93,8 @@ namespace Archiver.Domain.Models.ArchivesFiles
             {
                 if (disposing)
                 {
-                    if (compressedReader != null) compressedReader.Dispose();
-                    if (compressedWriter != null) compressedWriter.Dispose();
+                    if (redaer != null) redaer.Dispose();
+                    if (writer != null) writer.Dispose();
                 }
                 disposedValue = true;
             }
@@ -105,14 +106,20 @@ namespace Archiver.Domain.Models.ArchivesFiles
             GC.SuppressFinalize(this);
         }
 
+        private void CheckPathToIsDirectory()
+        {
+            if (!Directory.Exists(PathTo))
+                throw new DirectoryNotFoundException($"Конечный путь ({PathTo}) должен быть каталогом");
+        }
+
         private string GetRightPathToFile(string extension)
         {
             var fileName = Path.GetFileNameWithoutExtension(PathFrom) + extension;
             return PathTo + $"\\{fileName}";
         }
 
-        private CompressedDataReader compressedReader;
-        private CompressedDataWriter compressedWriter;
+        private DataReader redaer;
+        private DataWriter writer;
         private bool disposedValue;
     }
 }
