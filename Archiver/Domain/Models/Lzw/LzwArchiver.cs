@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Archiver.Domain.Interfaces;
 
-namespace Archiver.Domain.Models
+namespace Archiver.Domain.Models.Lzw
 {
     public class LzwArchiver : IArchiverBase
     {
@@ -19,6 +19,9 @@ namespace Archiver.Domain.Models
 
         public byte[] CompressData(byte[] data) // TODO: Улучшить алгоритм: сжатие выполняется только для .txt файлов
         {
+            if (data.Length == 0)
+                throw new ArgumentException("LzwArchiver был передан пустой массив на сжатие");
+
             Dictionary<string, int> dictionary = new Dictionary<string, int>();
             for (int i = 0; i < 256; i++)
                 dictionary.Add(((char)i).ToString(), i);
@@ -49,6 +52,9 @@ namespace Archiver.Domain.Models
 
         public byte[] DecompressData(byte[] compressedData)
         {
+            if (compressedData.Length == 0)
+                throw new ArgumentException("HuffmanArchiver был передан пустой массив на разархивацию");
+
             Dictionary<int, string> dictionary = new Dictionary<int, string>();
 
             for (int i = 0; i < 256; i++)
