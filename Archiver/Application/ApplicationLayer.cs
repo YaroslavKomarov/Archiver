@@ -36,13 +36,13 @@ namespace Archiver.Application
                 var rightImplementation = archivesDictionary[algName];
                 var accessoryData = rightImplementation.AccessoryData;
                 var initExtension = FileHandler.GetFileExtensionFromPath(pathFrom);
-                var fHandler = new FileHandler(pathFrom, pathTo, rightImplementation.AlgorithmExtension, true);
-                new ArchiveFile(initExtension, accessoryData).WriteArchiveFile(fHandler, rightImplementation);
+                var fHandler = new FileHandler(pathFrom, pathTo);
+                new ArchiveFile(initExtension, accessoryData, fHandler).WriteArchiveFile(rightImplementation);
                 fHandler.Dispose();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -52,14 +52,14 @@ namespace Archiver.Application
             {
                 FileHandler.CheckPathExtension(pathFrom, algotihmsExtensionsDict);
                 var algExtension = FileHandler.GetFileExtensionFromPath(pathFrom);
-                var fHandler = new FileHandler(pathFrom, pathTo, algExtension, false);
+                var fHandler = new FileHandler(pathFrom, pathTo);
                 var rightImplementation = archivesDictionary[algotihmsExtensionsDict[algExtension]];
                 ArchiveFile.WriteInitFile(fHandler, rightImplementation);
                 fHandler.Dispose();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString(), "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

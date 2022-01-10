@@ -14,21 +14,25 @@ namespace Archiver.Domain.Models.ArchivesFiles
         public string PathFrom { get; }
         public string PathTo { get; }
 
-        public FileHandler(string pathFrom, string pathTo, string extension, bool isCompressed)
+        public FileHandler(string pathFrom, string pathTo)
         {
+            if (pathFrom == null || pathTo == null) 
+                throw new ArgumentNullException("Переданный путь не может быть пустым!");
+            CheckPathIsDirectory(pathTo);
+            CheckPathIsFile(pathFrom);
+            CheckPathFromNotEmptyFile(pathFrom);
             PathFrom = pathFrom;
             PathTo = pathTo;
-            CheckPathToIsDirectory();
-
-            if (isCompressed)
-                writer = new DataWriter(GetRightPathToFile(extension));
-            else
-                redaer = new DataReader(PathFrom, BufferSize);
         }
 
-        public void InitializeCompressedWriter(string extension)
+        public void InitializeWriter(string extension)
         {
             writer = new DataWriter(GetRightPathToFile(extension));
+        }
+
+        public void InitializeReader()
+        {
+            reader = new DataReader(PathFrom, BufferSize);
         }
 
         public IEnumerable<byte[]> TryReadBytesInPortions()
@@ -52,12 +56,12 @@ namespace Archiver.Domain.Models.ArchivesFiles
 
         public byte[] TryReadAccessoryDataFromReader()
         {
-            return redaer.GetBytesFromStreamUntilDataSep();
+            return reader.GetBytesFromStreamUntilDataSep();
         }
 
         public IEnumerable<byte[]> TryReadCompressedBytesFromReader()
         {
-            return redaer.GetBytesFromStreamUntilCompressedDataSep();
+            return reader.GetBytesFromStreamUntilCompressedDataSep();
         }
 
         public static Encoding GetFileEncoding(string path)
@@ -79,7 +83,7 @@ namespace Archiver.Domain.Models.ArchivesFiles
         {
             var extension = GetFileExtensionFromPath(path);
             if (!extensionDict.ContainsKey(extension))
-                throw new FileFormatException($"Передан файл с неверным расширением: {path}");
+                throw new FileFormatException($"Переданрый файл ( путь: {path} ) имеет недопустимое расширение");
         }
 
         public static string GetFileExtensionFromPath(string path)
@@ -93,7 +97,7 @@ namespace Archiver.Domain.Models.ArchivesFiles
             {
                 if (disposing)
                 {
-                    if (redaer != null) redaer.Dispose();
+                    if (reader != null) reader.Dispose();
                     if (writer != null) writer.Dispose();
                 }
                 disposedValue = true;
@@ -106,10 +110,27 @@ namespace Archiver.Domain.Models.ArchivesFiles
             GC.SuppressFinalize(this);
         }
 
-        private void CheckPathToIsDirectory()
+        private static void CheckPathIsDirectory(string path)
         {
-            if (!Directory.Exists(PathTo))
-                throw new DirectoryNotFoundException($"Конечный путь ({PathTo}) должен быть каталогом");
+            var attr = File.GetAttributes(path);
+
+            if (!attr.HasFlag(FileAttributes.Directory))
+                throw new DirectoryNotFoundException($"Конечный путь ( путь: {path} ) должен вести к каталогу");
+        }
+
+        private static void CheckPathIsFile(string path)
+        {
+            var attr = File.GetAttributes(path);
+
+            if (attr.HasFlag(FileAttributes.Directory))
+                throw new FileFormatException($"Начальный путь ( путь: {path} ) должен вести к сжимаемому файлу");
+        }
+
+        public static void CheckPathFromNotEmptyFile(string path)
+        {
+            using (var fs = File.OpenRead(path))
+                if (fs.Length == 0)
+                    throw new EndOfStreamException($"Попытка сжатия пустого файла ( путь: {path} )");
         }
 
         private string GetRightPathToFile(string extension)
@@ -118,7 +139,7 @@ namespace Archiver.Domain.Models.ArchivesFiles
             return PathTo + $"\\{fileName}";
         }
 
-        private DataReader redaer;
+        private DataReader reader;
         private DataWriter writer;
         private bool disposedValue;
     }
