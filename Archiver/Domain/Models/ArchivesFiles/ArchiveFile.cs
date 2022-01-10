@@ -8,15 +8,45 @@ namespace Archiver.Domain.Models.ArchivesFiles
     {
         public Dictionary<string, byte[]> AccessoryData { get; }
         public string InitExtension { get; }
+        public FileHandler FHandler { get; }
 
-        public ArchiveFile(string initExtension, Dictionary<string, byte[]> accessoryData)
+        public ArchiveFile(string initExtension, Dictionary<string, byte[]> accessoryData, FileHandler fHandler)
         {
             InitExtension = initExtension;
             AccessoryData = accessoryData;
+            FHandler = fHandler;
         }
 
-        public ArchiveFile(FileHandler fHandler)
+        public static void WriteInitFile(FileHandler fHandler, IArchiverBase rightImplementation)
         {
+            var archiveFile = new ArchiveFile(fHandler);
+            rightImplementation.AccessoryData = archiveFile.AccessoryData;
+            foreach (var compressedBytes in fHandler.TryReadCompressedBytesFromReader())
+            {
+                var formatCompressedBytes = ToRightFormatConverter.RemoveZerosFromBytes(compressedBytes);
+                var decompressedBytes = rightImplementation.DecompressData(formatCompressedBytes);
+                fHandler.TryWriteBytesPortion(decompressedBytes);
+            }
+        }
+
+        public void WriteArchiveFile(IArchiverBase rightImplementation)
+        {
+            FHandler.InitializeWriter(rightImplementation.AlgorithmExtension);
+            WriteInitExtension();
+            var count = 0;
+            foreach (var bytes in FHandler.TryReadBytesInPortions())
+            {
+                var compressedBytes = rightImplementation.CompressData(bytes);
+                if (count++ == 0)
+                    WriteAccessoryData();
+                WriteCompressedDataPortion(compressedBytes);
+            }
+        }
+
+        private ArchiveFile(FileHandler fHandler)
+        {
+            FHandler = fHandler;
+            FHandler.InitializeReader();
             while (true)
             {
                 if (InitExtension == null)
@@ -31,54 +61,29 @@ namespace Archiver.Domain.Models.ArchivesFiles
                 }
                 else break;
             }
+            FHandler.InitializeWriter(InitExtension);
         }
 
-        public static void WriteInitFile(FileHandler fHandler, IArchiverBase rightImplementation)
-        {
-            var archiveFile = new ArchiveFile(fHandler);
-            rightImplementation.AccessoryData = archiveFile.AccessoryData;
-            fHandler.InitializeCompressedWriter(archiveFile.InitExtension);
-            foreach (var compressedBytes in fHandler.TryReadCompressedBytesFromReader())
-            {
-                var formatCompressedBytes = ToRightFormatConverter.RemoveZerosFromBytes(compressedBytes);
-                var decompressedBytes = rightImplementation.DecompressData(formatCompressedBytes);
-                fHandler.TryWriteBytesPortion(decompressedBytes);
-            }
-        }
-
-        public void WriteArchiveFile(FileHandler fHandler, IArchiverBase rightImplementation)
-        {
-            WriteInitExtension(fHandler);
-            var count = 0;
-            foreach (var bytes in fHandler.TryReadBytesInPortions())
-            {
-                var compressedBytes = rightImplementation.CompressData(bytes);
-                if (count++ == 0)
-                    WriteAccessoryData(fHandler);
-                WriteCompressedDataPortion(fHandler, compressedBytes);
-            }
-        }
-
-        private void WriteInitExtension(FileHandler fHandler)
+        private void WriteInitExtension()
         {
             var extensionBytes = ToRightFormatConverter.GetBytesFromString(InitExtension);
             var initExtensionBytes = ToRightFormatConverter.GetBytesWithZerosDataSeparator(extensionBytes);
-            fHandler.TryWriteBytesPortion(initExtensionBytes);
-            fHandler.TryWriteBytesPortion(ToRightFormatConverter.DataSeparator);
+            FHandler.TryWriteBytesPortion(initExtensionBytes);
+            FHandler.TryWriteBytesPortion(ToRightFormatConverter.DataSeparator);
         }
 
-        private void WriteAccessoryData(FileHandler fHandler)
+        private void WriteAccessoryData()
         {
             var accessoryDataBytes = ToRightFormatConverter.ConvertAccessoryDictToByteArray(AccessoryData);
-            fHandler.TryWriteBytesPortion(accessoryDataBytes);
-            fHandler.TryWriteBytesPortion(ToRightFormatConverter.DataSeparator);
+            FHandler.TryWriteBytesPortion(accessoryDataBytes);
+            FHandler.TryWriteBytesPortion(ToRightFormatConverter.DataSeparator);
         }
 
-        private void WriteCompressedDataPortion(FileHandler fHandler, byte[] compressedBytes)
+        private void WriteCompressedDataPortion(byte[] compressedBytes)
         {
             var formatCompressedBytes = ToRightFormatConverter.GetBytesWithZerosCompressedDataSep(compressedBytes);
-            fHandler.TryWriteBytesPortion(formatCompressedBytes);
-            fHandler.TryWriteBytesPortion(ToRightFormatConverter.CompressedDataSeparator);
+            FHandler.TryWriteBytesPortion(formatCompressedBytes);
+            FHandler.TryWriteBytesPortion(ToRightFormatConverter.CompressedDataSeparator);
         }
     }
 }

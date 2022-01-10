@@ -7,7 +7,7 @@ namespace Archiver.Domain.Models.Haffman
 {
     public class HuffmanArchiver : IArchiverBase
     {
-        public string AlgorithmExtension => ".haf";
+        public string AlgorithmExtension => ".huf";
 
         public Dictionary<string, byte[]> AccessoryData { get; set; }
 
@@ -18,6 +18,8 @@ namespace Archiver.Domain.Models.Haffman
 
         public byte[] CompressData(byte[] data)
         {
+            if (data.Length == 0)
+                throw new ArgumentException("HuffmanArchiver был передан пустой массив на сжатие");
             var freqs = CalculateFreq(data);
             var header = CreateHeader(data.Length, freqs);
             var root = CreateHuffmanTree(freqs);
@@ -28,6 +30,8 @@ namespace Archiver.Domain.Models.Haffman
 
         public byte[] DecompressData(byte[] compressedData)
         {
+            if (compressedData.Length == 0)
+                throw new ArgumentException("HuffmanArchiver был передан пустой массив на разархивацию");
             ParseHeader(compressedData, out int length, out int startIndex, out int[] freqs);
             var root = CreateHuffmanTree(freqs);
             return Decompress(compressedData, startIndex, length, root);
@@ -73,10 +77,6 @@ namespace Archiver.Domain.Models.Haffman
             var header = new List<byte>();
             foreach (var b in BitConverter.GetBytes(length))
                 header.Add(b);
-            //header.Add((byte)(length & 255));
-            //header.Add((byte)((length >> 8) & 255));
-            //header.Add((byte)((length >> 16) & 255));
-            //header.Add((byte)((length >> 24) & 255));
             for (var i = 0; i < 256; i++)
                 header.Add((byte)freqs[i]);
             return header.ToArray();

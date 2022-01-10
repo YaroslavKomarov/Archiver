@@ -24,7 +24,7 @@ namespace Archiver.Domain.Models.Haffman
         public T Dequeue()
         {
             if (Size == 0) 
-                throw new Exception("Queue is empty");
+                throw new ArgumentOutOfRangeException("Queue is empty");
             Size--;
             foreach (var q in storage.Values)
                 if (q.Count > 0)

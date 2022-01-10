@@ -22,7 +22,7 @@ namespace Archiver.Infrastructure
                 AddAccessoryBytesWithZeros(keyBytes, result);
                 foreach (var b in AccessoryDataSeparator)
                     result.Add(b);
-                AddAccessoryBytesWithZeros(keyBytes, result);
+                AddAccessoryBytesWithZeros(pair.Value, result);
                 foreach (var b in AccessoryDataSeparator)
                     result.Add(b);
             }
@@ -40,14 +40,14 @@ namespace Archiver.Infrastructure
             for (var i = 0; i < accessoryData.Length; i++)
             {
                 var b = accessoryData[i];
-                if (IsSeparatorFound(accessoryData, i))
+                if (IsAccessorySeparatorFound(accessoryData, i))
                 {
                     i++;
                     if (!isKeyAccumulation)
                     {
                         dictionary.Add(UsedEncoding.GetString(keyBytes.ToArray()), valBytes.ToArray());
                         keyBytes = new List<byte>();
-                        valBytes = new List<byte>();
+                        valBytes = new List<byte>(); 
                     }
                     isKeyAccumulation = !isKeyAccumulation;
                 }
@@ -122,9 +122,9 @@ namespace Archiver.Infrastructure
             }
         }
 
-        private static bool IsSeparatorFound(byte[] accessoryData, int i)
+        private static bool IsAccessorySeparatorFound(byte[] accessoryData, int i)
         {
-            return i + 1 < accessoryData.Length && i - 1 > 0 
+            return i + 1 < accessoryData.Length && i - 1 >= 0 
                 && accessoryData[i] == AccessoryDataSeparator[0]
                 && accessoryData[i + 1] == AccessoryDataSeparator[1]
                 && accessoryData[i - 1] != AccessoryDataSeparator[0];
