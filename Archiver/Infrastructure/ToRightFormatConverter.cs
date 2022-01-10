@@ -59,7 +59,22 @@ namespace Archiver.Infrastructure
             return dictionary;
         }
 
-        public static byte[] RemoveZerosFromBytes(byte[] bytes)
+        public static byte[] RemoveZerosFromBytesData(byte[] bytes)
+        {
+            var separator = DataSeparator;
+            var lstBytes = new List<byte>();
+            for (var i = 0; i < bytes.Length; i++)
+            {
+                var b = bytes[i];
+                if (i + 2 < bytes.Length)
+                    if (b == separator[0] && bytes[i + 1] == separator[0] && bytes[i + 2] == separator[1])
+                        continue;
+                lstBytes.Add(b);
+            }
+            return lstBytes.ToArray();
+        }
+
+        public static byte[] RemoveZerosFromBytesCompressedData(byte[] bytes)
         {
             var separator = CompressedDataSeparator;
             var lstBytes = new List<byte>();

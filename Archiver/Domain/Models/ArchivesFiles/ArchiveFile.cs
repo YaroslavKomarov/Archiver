@@ -23,7 +23,7 @@ namespace Archiver.Domain.Models.ArchivesFiles
             rightImplementation.AccessoryData = archiveFile.AccessoryData;
             foreach (var compressedBytes in fHandler.TryReadCompressedBytesFromReader())
             {
-                var formatCompressedBytes = ToRightFormatConverter.RemoveZerosFromBytes(compressedBytes);
+                var formatCompressedBytes = ToRightFormatConverter.RemoveZerosFromBytesCompressedData(compressedBytes);
                 var decompressedBytes = rightImplementation.DecompressData(formatCompressedBytes);
                 fHandler.TryWriteBytesPortion(decompressedBytes);
             }
@@ -51,13 +51,15 @@ namespace Archiver.Domain.Models.ArchivesFiles
             {
                 if (InitExtension == null)
                 {
-                    var compressedBytes = fHandler.TryReadAccessoryDataFromReader();
-                    InitExtension = ToRightFormatConverter.GetStringFromBytes(compressedBytes);
+                    var bytes = fHandler.TryReadAccessoryDataFromReader();
+                    var formatBytes = ToRightFormatConverter.RemoveZerosFromBytesData(bytes);
+                    InitExtension = ToRightFormatConverter.GetStringFromBytes(bytes);
                 }
                 else if (AccessoryData == null)
                 {
-                    var compressedBytes = fHandler.TryReadAccessoryDataFromReader();
-                    AccessoryData = ToRightFormatConverter.ConvertAccessoryDataToDictionary(compressedBytes);
+                    var bytes = fHandler.TryReadAccessoryDataFromReader();
+                    var formatBytes = ToRightFormatConverter.RemoveZerosFromBytesData(bytes);
+                    AccessoryData = ToRightFormatConverter.ConvertAccessoryDataToDictionary(bytes);
                 }
                 else break;
             }
